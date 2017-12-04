@@ -17,9 +17,9 @@ use Lapaz\QuickBrownFox\Generator\TablePrototypeGeneratorBuilder;
 class FixtureManager implements RepositoryAggregateInterface
 {
     /**
-     * @var Connection
+     * @var string
      */
-    protected $connection;
+    private $locale;
 
     /**
      * @var FixtureRepository[]
@@ -32,26 +32,19 @@ class FixtureManager implements RepositoryAggregateInterface
     protected $generatorRepositories;
 
     /**
-     * @var Loader
-     */
-    protected $loader;
-
-    /**
      * @var LoaderSession
      */
     protected $currentSession;
 
     /**
-     * @param Connection $connection
      * @param string $locale
      */
-    public function __construct(Connection $connection, $locale = Factory::DEFAULT_LOCALE)
+    public function __construct($locale = Factory::DEFAULT_LOCALE)
     {
-        $this->connection = $connection;
+        $this->locale = $locale;
+
         $this->fixtureRepositories = [];
         $this->generatorRepositories = [];
-        $prototypeBuilder = new TablePrototypeGeneratorBuilder($this->connection, Factory::create($locale));
-        $this->loader = new Loader($this->connection, $prototypeBuilder);
         $this->currentSession = null;
     }
 
@@ -95,14 +88,19 @@ class FixtureManager implements RepositoryAggregateInterface
     }
 
     /**
+     * @param Connection $connection
      * @return LoaderSession
      */
-    public function newSession()
+    public function newSession(Connection $connection)
     {
         if ($this->currentSession) {
             $this->currentSession->terminate();
         }
-        $this->currentSession = new LoaderSession($this, $this->loader);
+
+        $prototypeBuilder = new TablePrototypeGeneratorBuilder($connection, Factory::create($this->locale));
+        $loader = new Loader($connection, $prototypeBuilder);
+        $this->currentSession = new LoaderSession($this, $loader);
+
         return $this->currentSession;
     }
 

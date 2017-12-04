@@ -28,7 +28,7 @@ class FixtureManagerTest extends TestCase
 
     public function testInlineGenerate()
     {
-        $session = $this->manager->newSession();
+        $session = $this->manager->newSession($this->connection);
         $session->intoTable('foo')->generate(10);
 
         $count = $this->connection->fetchColumn("SELECT COUNT(*) FROM foo;");
@@ -45,7 +45,7 @@ class FixtureManagerTest extends TestCase
             ]);
         });
 
-        $session = $this->manager->newSession();
+        $session = $this->manager->newSession($this->connection);
         $session->intoTable('foo')->generate();
 
         $rows = $this->connection->fetchAll("SELECT * FROM foo;");
@@ -68,7 +68,7 @@ class FixtureManagerTest extends TestCase
             ]);
         });
 
-        $session = $this->manager->newSession();
+        $session = $this->manager->newSession($this->connection);
         $session->intoTable('foo')->generate();
         $session->intoTable('foo')->with('10x')->generate();
         $session->intoTable('foo')->with([
@@ -96,7 +96,7 @@ class FixtureManagerTest extends TestCase
             ]);
         });
 
-        $session = $this->manager->newSession();
+        $session = $this->manager->newSession($this->connection);
         $session->intoTable('foo')->with([
             'number3' => function ($i) {
                 return $i;
@@ -131,7 +131,7 @@ class FixtureManagerTest extends TestCase
             ]);
         });
 
-        $session = $this->manager->newSession();
+        $session = $this->manager->newSession($this->connection);
         $session->intoTable('foo')->with('num23')->generate();
         $session->intoTable('foo')->with('num23x10')->generate();
 
@@ -146,7 +146,7 @@ class FixtureManagerTest extends TestCase
 
     public function testInlineFixedArrayFixture()
     {
-        $session = $this->manager->newSession();
+        $session = $this->manager->newSession($this->connection);
         $session->intoTable('foo')->load([
             [
                 'number1' => 1,
@@ -191,7 +191,7 @@ class FixtureManagerTest extends TestCase
             ]);
         });
 
-        $session = $this->manager->newSession();
+        $session = $this->manager->newSession($this->connection);
         $session->intoTable('foo')->load('3rec');
 
         $rows = $this->connection->fetchAll("SELECT * FROM foo;");
@@ -216,7 +216,7 @@ class FixtureManagerTest extends TestCase
             }, 3, 10);
         });
 
-        $session = $this->manager->newSession();
+        $session = $this->manager->newSession($this->connection);
         $session->intoTable('foo')->load('3rec-num2seq');
 
         $rows = $this->connection->fetchAll("SELECT * FROM foo;");
@@ -229,10 +229,10 @@ class FixtureManagerTest extends TestCase
 
     public function testIsolateDifferentSession()
     {
-        $session = $this->manager->newSession();
+        $session = $this->manager->newSession($this->connection);
         $session->intoTable('foo')->generate(10);
 
-        $session = $this->manager->newSession();
+        $session = $this->manager->newSession($this->connection);
         $session->intoTable('foo')->generate(2);
 
         $rows = $this->connection->fetchAll("SELECT * FROM foo;");
@@ -254,7 +254,7 @@ class FixtureManagerTest extends TestCase
         $this->sqlLogger = new DebugStack();
         // $this->connection->getConfiguration()->setSQLLogger($this->sqlLogger);
 
-        $this->manager = new FixtureManager($this->connection);
+        $this->manager = new FixtureManager();
 
         parent::setUp();
     }
