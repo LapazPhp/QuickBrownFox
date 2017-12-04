@@ -38,8 +38,8 @@ class FixtureManagerTest extends TestCase
 
     public function testDefaultGenerator()
     {
-        $this->manager->defineTable('foo', function (TableDefinition $td) {
-            $td->defaults([
+        $this->manager->table('foo', function (TableDefinition $td) {
+            $td->defaults()->define([
                 'number2' => 2,
                 'number3' => 3,
             ]);
@@ -58,12 +58,12 @@ class FixtureManagerTest extends TestCase
 
     public function testPredefinedGenerator()
     {
-        $this->manager->defineTable('foo', function (TableDefinition $td) {
-            $td->defaults([
+        $this->manager->table('foo', function (TableDefinition $td) {
+            $td->defaults()->define([
                 'number2' => 2,
                 'number3' => 3
             ]);
-            $td->generator('10x', [
+            $td->generator('10x')->define([
                 'number3' => 30,
             ]);
         });
@@ -89,8 +89,8 @@ class FixtureManagerTest extends TestCase
 
     public function testInlineCallbackGenerator()
     {
-        $this->manager->defineTable('foo', function (TableDefinition $td) {
-            $td->defaults([
+        $this->manager->table('foo', function (TableDefinition $td) {
+            $td->defaults()->define([
                 'number2' => 2,
                 'number3' => 3
             ]);
@@ -118,22 +118,30 @@ class FixtureManagerTest extends TestCase
 
     public function testPredefinedGeneratorComposition()
     {
-        $this->manager->defineTable('foo', function (TableDefinition $td) {
-            $td->generator('num2', [
+        $this->manager->table('foo', function (TableDefinition $td) {
+            $td->generator('num2')->define([
                 'number2' => 2,
             ]);
-            $td->generator('num3', [
+            $td->generator('num3')->define([
                 'number3' => 3,
             ]);
-            $td->with(['num2', 'num3'])->generator('num23');
+            $td->generator('num23')->with(['num2', 'num3'])->define();
+            $td->generator('num23x10')->with('num23')->define([
+                'number3' => 30,
+            ]);
         });
 
         $session = $this->manager->newSession();
         $session->intoTable('foo')->with('num23')->generate();
+        $session->intoTable('foo')->with('num23x10')->generate();
 
         $rows = $this->connection->fetchAll("SELECT * FROM foo;");
+
         $this->assertEquals(2, $rows[0]['number2']);
         $this->assertEquals(3, $rows[0]['number3']);
+
+        $this->assertEquals(2, $rows[1]['number2']);
+        $this->assertEquals(30, $rows[1]['number3']);
     }
 
     public function testInlineFixedArrayFixture()
@@ -167,8 +175,8 @@ class FixtureManagerTest extends TestCase
 
     public function testPredefinedFixture()
     {
-        $this->manager->defineTable('foo', function (TableDefinition $td) {
-            $td->fixture('3rec', [
+        $this->manager->table('foo', function (TableDefinition $td) {
+            $td->fixture('3rec')->define([
                 [
                     'number1' => 1,
                     'number2' => 2,
@@ -200,8 +208,8 @@ class FixtureManagerTest extends TestCase
 
     public function testPredefinedGeneratedFixture()
     {
-        $this->manager->defineTable('foo', function (TableDefinition $td) {
-            $td->fixtureGenerated('3rec-num2seq', function ($i) {
+        $this->manager->table('foo', function (TableDefinition $td) {
+            $td->fixture('3rec-num2seq')->defineGenerated(function ($i) {
                 return [
                     'number2' => $i,
                 ];

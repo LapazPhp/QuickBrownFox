@@ -6,12 +6,15 @@ use Lapaz\QuickBrownFox\Generator\GeneratorRepository;
 
 class TableDefinition
 {
-    use WithContextTrait;
-
     /**
      * @var FixtureRepository
      */
     protected $fixtureRepository;
+
+    /**
+     * @var GeneratorRepository
+     */
+    protected $generatorRepository;
 
     /**
      * @param FixtureRepository $fixtureRepository
@@ -21,55 +24,31 @@ class TableDefinition
     {
         $this->fixtureRepository = $fixtureRepository;
         $this->generatorRepository = $generatorRepository;
-        $this->generators = [];
     }
 
     /**
-     * @param array|callable $definition
+     * @return TableDefaultsDefinition
      */
-    public function defaults($definition = [])
+    public function defaults()
     {
-        $generators = $this->generators;
-
-        if (!empty($definition)) {
-            $generators[] = $definition;
-        }
-
-        $this->generatorRepository->defineTableDefaults($generators);
+        return new TableDefaultsDefinition($this->generatorRepository);
     }
 
     /**
      * @param string $name
-     * @param array|callable $definition
+     * @return TableGeneratorDefinition
      */
-    public function generator($name, $definition = [])
+    public function generator($name)
     {
-        $generators = $this->generators;
-
-        if (!empty($definition)) {
-            $generators[] = $definition;
-        }
-
-        $this->generatorRepository->defineComposite($name, $generators);
+        return new TableGeneratorDefinition($name, $this->generatorRepository);
     }
 
     /**
      * @param string $name
-     * @param array $records
+     * @return TableFixtureDefinition
      */
-    public function fixture($name, $records)
+    public function fixture($name)
     {
-        $this->fixtureRepository->define($name, $records, $this->generators);
-    }
-
-    /**
-     * @param string $name
-     * @param string|array|callable $generator
-     * @param int $repeatAmount
-     * @param int $baseIndex
-     */
-    public function fixtureGenerated($name, $generator, $repeatAmount, $baseIndex = 0)
-    {
-        $this->fixtureRepository->defineGenerated($name, $generator, $repeatAmount, $baseIndex, $this->generators);
+        return new TableFixtureDefinition($name, $this->fixtureRepository, $this->generatorRepository);
     }
 }

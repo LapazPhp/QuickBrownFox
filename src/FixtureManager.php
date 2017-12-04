@@ -85,7 +85,7 @@ class FixtureManager implements RepositoryAggregateInterface
      * @param string $table
      * @param callable $callable
      */
-    public function defineTable($table, $callable)
+    public function table($table, $callable)
     {
         $context = new TableDefinition(
             $this->getFixtureRepositoryFor($table),

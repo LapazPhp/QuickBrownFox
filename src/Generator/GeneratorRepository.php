@@ -119,7 +119,7 @@ class GeneratorRepository
      * @param GeneratorInterface[]|string[]|array[]|callable[] $generators
      * @return GeneratorComposite
      */
-    public function newGeneratorComposite($generators)
+    public function newGeneratorComposite(array $generators)
     {
         $normalizedGenerators = [];
         foreach ($generators as $generator) {
@@ -137,7 +137,7 @@ class GeneratorRepository
      * @param string $name
      * @param GeneratorInterface[]|string[]|array[]|callable[] $generators
      */
-    public function defineComposite($name, $generators)
+    public function defineComposite($name, array $generators)
     {
         $this->set($name, $this->newGeneratorComposite($generators));
     }

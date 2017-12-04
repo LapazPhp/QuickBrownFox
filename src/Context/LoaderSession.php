@@ -3,13 +3,12 @@ namespace Lapaz\QuickBrownFox\Context;
 
 use Lapaz\QuickBrownFox\Exception\UnexpectedStateException;
 use Lapaz\QuickBrownFox\Fixture\FixtureInterface;
-use Lapaz\QuickBrownFox\FixtureManager;
 use Lapaz\QuickBrownFox\Fixture\Loader;
 
 class LoaderSession
 {
     /**
-     * @var FixtureManager
+     * @var RepositoryAggregateInterface
      */
     protected $manager;
 
