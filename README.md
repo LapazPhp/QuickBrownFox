@@ -124,7 +124,7 @@ These are deleted automatically when the next session would use the same table.
         ])->generate(6));
 ```
 
-Attributes are overridden as left one over right one. Overridden function are not evaluated, so unnecessary slow calculations can be passed.
+Attributes are overridden by right one over left one. Overridden function are not evaluated, so unnecessary slow calculations are not called.
 
 ```php
         $this->session->into('books')->with('DesignPattern-N')->with([
