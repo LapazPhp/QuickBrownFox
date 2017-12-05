@@ -7,16 +7,15 @@ use Lapaz\QuickBrownFox\Fixture\GeneratedRecordFixture;
 use Lapaz\QuickBrownFox\Fixture\GeneratorSupportedFixture;
 use Lapaz\QuickBrownFox\Generator\GeneratorComposite;
 use Lapaz\QuickBrownFox\Generator\GeneratorRepository;
-use Lapaz\QuickBrownFox\LoaderSession;
 
 class TableLoading
 {
     use WithContextTrait;
 
     /**
-     * @var LoaderSession
+     * @var FixtureLoadableInterface
      */
-    protected $session;
+    protected $fixtureLoader;
 
     /**
      * @var string
@@ -29,19 +28,19 @@ class TableLoading
     protected $fixtureRepository;
 
     /**
-     * @param LoaderSession $session
+     * @param FixtureLoadableInterface $fixtureLoader
      * @param string $table
      * @param FixtureRepository $fixtureRepository
      * @param GeneratorRepository $generatorRepository
      */
     public function __construct(
-        LoaderSession $session,
+        FixtureLoadableInterface $fixtureLoader,
         $table,
         FixtureRepository $fixtureRepository,
         GeneratorRepository $generatorRepository
     )
     {
-        $this->session = $session;
+        $this->fixtureLoader = $fixtureLoader;
         $this->table = $table;
         $this->fixtureRepository = $fixtureRepository;
 
@@ -66,7 +65,7 @@ class TableLoading
             $amount
         );
 
-        return $this->session->loadFixtureInternal($this->table, $fixtureSource, $baseIndex);
+        return $this->fixtureLoader->load($this->table, $fixtureSource, $baseIndex);
     }
 
     /**
@@ -87,6 +86,6 @@ class TableLoading
             new GeneratorComposite($this->generators)
         );
 
-        return $this->session->loadFixtureInternal($this->table, $fixtureSource, $baseIndex);
+        return $this->fixtureLoader->load($this->table, $fixtureSource, $baseIndex);
     }
 }

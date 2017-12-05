@@ -23,7 +23,7 @@ class Loader
     /**
      * @param string $table
      */
-    public function unload($table)
+    public function truncate($table)
     {
         try {
             $sql = $this->connection->getDatabasePlatform()->getTruncateTableSQL($table);

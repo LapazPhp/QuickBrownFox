@@ -2,13 +2,14 @@
 namespace Lapaz\QuickBrownFox;
 
 use Doctrine\DBAL\Connection;
+use Lapaz\QuickBrownFox\Context\FixtureLoadableInterface;
 use Lapaz\QuickBrownFox\Context\TableLoading;
 use Lapaz\QuickBrownFox\Database\Loader;
 use Lapaz\QuickBrownFox\Database\TablePrototypeGeneratorBuilder;
 use Lapaz\QuickBrownFox\Exception\UnexpectedStateException;
 use Lapaz\QuickBrownFox\Fixture\FixtureInterface;
 
-class LoaderSession
+class FixtureSetupSession implements FixtureLoadableInterface
 {
     /**
      * @var FixtureManager
@@ -58,7 +59,7 @@ class LoaderSession
      * @param string $table
      * @return TableLoading
      */
-    public function intoTable($table)
+    public function into($table)
     {
         return new TableLoading(
             $this,
@@ -71,9 +72,9 @@ class LoaderSession
     /**
      * @param string $table
      */
-    public function emptyTable($table)
+    public function truncate($table)
     {
-        $this->loader->unload($table);
+        $this->loader->truncate($table);
         $this->reloadedTables[$table] = true;
     }
 
@@ -83,14 +84,14 @@ class LoaderSession
      * @param int|null $baseIndex
      * @return array
      */
-    public function loadFixtureInternal($table, FixtureInterface $fixtureSource, $baseIndex = null)
+    public function load($table, FixtureInterface $fixtureSource, $baseIndex = null)
     {
         if ($this->terminated) {
             throw new UnexpectedStateException("Session already terminated");
         }
 
         if (!isset($this->reloadedTables[$table])) {
-            $this->loader->unload($table);
+            $this->loader->truncate($table);
             $this->reloadedTables[$table] = true;
         }
 

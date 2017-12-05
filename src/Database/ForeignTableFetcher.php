@@ -90,7 +90,7 @@ class ForeignTableFetcher implements ValueProviderInterface
         $prototypeGenerator = $this->prototypeBuilder->build($this->table);
         $record = $prototypeGenerator->generateAt(0);
 
-        $loader = new Loader($connection, $this->prototypeBuilder);
+        $loader = new Loader($connection);
         $loader->load($this->table, [$record]);
 
         $this->foreignRecords = $connection->fetchAll("SELECT {$fields} FROM {$table} LIMIT {$maxAmount}");

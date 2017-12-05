@@ -2,7 +2,8 @@
 namespace Lapaz\QuickBrownFox;
 
 use Doctrine\DBAL\Connection;
-use Faker\Factory;
+use Faker\Factory as RandomValueFactory;
+use Faker\Generator as RandomValueGenerator;
 use Lapaz\QuickBrownFox\Context\TableDefinition;
 use Lapaz\QuickBrownFox\Database\TablePrototypeGeneratorBuilder;
 use Lapaz\QuickBrownFox\Fixture\FixtureRepository;
@@ -10,11 +11,6 @@ use Lapaz\QuickBrownFox\Generator\GeneratorRepository;
 
 class FixtureManager
 {
-    /**
-     * @var string
-     */
-    private $locale;
-
     /**
      * @var FixtureRepository[]
      */
@@ -26,16 +22,21 @@ class FixtureManager
     protected $generatorRepositories;
 
     /**
-     * @var LoaderSession
+     * @var RandomValueGenerator
+     */
+    protected $randomValueGenerator;
+
+    /**
+     * @var FixtureSetupSession
      */
     protected $currentSession;
 
     /**
      * @param string $locale
      */
-    public function __construct($locale = Factory::DEFAULT_LOCALE)
+    public function __construct($locale = RandomValueFactory::DEFAULT_LOCALE)
     {
-        $this->locale = $locale;
+        $this->randomValueGenerator = RandomValueFactory::create($locale);
 
         $this->fixtureRepositories = [];
         $this->generatorRepositories = [];
@@ -83,7 +84,7 @@ class FixtureManager
 
     /**
      * @param Connection $connection
-     * @return LoaderSession
+     * @return FixtureSetupSession
      */
     public function newSession(Connection $connection)
     {
@@ -93,10 +94,10 @@ class FixtureManager
 
         $builder = new TablePrototypeGeneratorBuilder(
             $connection,
-            Factory::create($this->locale)
+            $this->randomValueGenerator
         );
 
-        $this->currentSession = new LoaderSession($connection, $this, $builder);
+        $this->currentSession = new FixtureSetupSession($connection, $this, $builder);
 
         return $this->currentSession;
     }

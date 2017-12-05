@@ -26,10 +26,20 @@ class FixtureManagerTest extends TestCase
      */
     protected $manager;
 
+    public function testTruncate()
+    {
+        $session = $this->manager->newSession($this->connection);
+        $session->truncate('foo');
+
+        $count = $this->connection->fetchColumn("SELECT COUNT(*) FROM foo;");
+
+        $this->assertEquals(0, $count);
+    }
+
     public function testInlineGenerate()
     {
         $session = $this->manager->newSession($this->connection);
-        $session->intoTable('foo')->generate(10);
+        $session->into('foo')->generate(10);
 
         $count = $this->connection->fetchColumn("SELECT COUNT(*) FROM foo;");
 
@@ -46,7 +56,7 @@ class FixtureManagerTest extends TestCase
         });
 
         $session = $this->manager->newSession($this->connection);
-        $session->intoTable('foo')->generate();
+        $session->into('foo')->generate();
 
         $rows = $this->connection->fetchAll("SELECT * FROM foo;");
 
@@ -69,9 +79,9 @@ class FixtureManagerTest extends TestCase
         });
 
         $session = $this->manager->newSession($this->connection);
-        $session->intoTable('foo')->generate();
-        $session->intoTable('foo')->with('10x')->generate();
-        $session->intoTable('foo')->with([
+        $session->into('foo')->generate();
+        $session->into('foo')->with('10x')->generate();
+        $session->into('foo')->with([
             'number3' => 300,
         ])->generate();
 
@@ -97,7 +107,7 @@ class FixtureManagerTest extends TestCase
         });
 
         $session = $this->manager->newSession($this->connection);
-        $session->intoTable('foo')->with([
+        $session->into('foo')->with([
             'number3' => function ($i) {
                 return $i;
             }
@@ -132,8 +142,8 @@ class FixtureManagerTest extends TestCase
         });
 
         $session = $this->manager->newSession($this->connection);
-        $session->intoTable('foo')->with('num23')->generate();
-        $session->intoTable('foo')->with('num23x10')->generate();
+        $session->into('foo')->with('num23')->generate();
+        $session->into('foo')->with('num23x10')->generate();
 
         $rows = $this->connection->fetchAll("SELECT * FROM foo;");
 
@@ -147,7 +157,7 @@ class FixtureManagerTest extends TestCase
     public function testInlineFixedArrayFixture()
     {
         $session = $this->manager->newSession($this->connection);
-        $session->intoTable('foo')->load([
+        $session->into('foo')->load([
             [
                 'number1' => 1,
                 'number2' => 2,
@@ -192,7 +202,7 @@ class FixtureManagerTest extends TestCase
         });
 
         $session = $this->manager->newSession($this->connection);
-        $session->intoTable('foo')->load('3rec');
+        $session->into('foo')->load('3rec');
 
         $rows = $this->connection->fetchAll("SELECT * FROM foo;");
         $this->assertCount(3, $rows);
@@ -217,7 +227,7 @@ class FixtureManagerTest extends TestCase
         });
 
         $session = $this->manager->newSession($this->connection);
-        $session->intoTable('foo')->load('3rec-num2seq');
+        $session->into('foo')->load('3rec-num2seq');
 
         $rows = $this->connection->fetchAll("SELECT * FROM foo;");
         $this->assertCount(3, $rows);
@@ -230,10 +240,10 @@ class FixtureManagerTest extends TestCase
     public function testIsolateDifferentSession()
     {
         $session = $this->manager->newSession($this->connection);
-        $session->intoTable('foo')->generate(10);
+        $session->into('foo')->generate(10);
 
         $session = $this->manager->newSession($this->connection);
-        $session->intoTable('foo')->generate(2);
+        $session->into('foo')->generate(2);
 
         $rows = $this->connection->fetchAll("SELECT * FROM foo;");
         $this->assertCount(2, $rows);
@@ -243,9 +253,9 @@ class FixtureManagerTest extends TestCase
     {
         $session = $this->manager->newSession($this->connection);
 
-        $session->intoTable('foo_parent')->generate(2);
+        $session->into('foo_parent')->generate(2);
 
-        $session->intoTable('foo')->generate(3);
+        $session->into('foo')->generate(3);
 
         $rows = $this->connection->fetchAll("SELECT * FROM foo;");
         $this->assertEquals(1, $rows[0]['parent_id']);
