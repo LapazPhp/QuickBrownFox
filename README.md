@@ -6,7 +6,7 @@ ORM independent RDB fixture data generator.
 
 ## Usage
 
-`bootstrap.php` for PHPUnit:
+In PHPUnit `bootstrap.php`, define some common rules:
 
 ```php
 <?php
@@ -14,23 +14,15 @@ $fixtureManager = new \Lapaz\QuickBrownFox\FixtureManager();
 
 $fixtureManager->table('author', function ($td) {
     $td->fixture('GoF')->define([
-        [
-            'name' => "Erich Gamma",
-        ],
-        [
-            'name' => "Richard Helm",
-        ],
-        [
-            'name' => "Ralph Johnson",
-        ],
-        [
-            'name' => "John Vlissides",
-        ],
+        [ 'name' => "Erich Gamma" ],
+        [ 'name' => "Richard Helm" ],
+        [ 'name' => "Ralph Johnson" ],
+        [ 'name' => "John Vlissides" ],
     ]);
 });
 
 $fixtureManager->table('book', function ($td) {
-    $td->generator('numbered')->define(function($i) {
+    $td->generator('DesignPattern-N')->define(function($i) {
         return [
             'title' => 'Design Pattern ' . ($i + 1),
             'code' => sprintf('000-000-%03d', $i),
@@ -54,6 +46,7 @@ class BookRepositoryTest extends TestCase
     protected function setUp()
     {
         global $fixtureManager;
+        // Create some singleton like accessor if you hate **global** statement.
         
         $this->connection = new PDO('...');
         $this->session = $fixtureManager->newSession($this->connection);
@@ -67,13 +60,14 @@ Add tests using predefined fixtures and generators:
     public function testFindBook()
     {
         $this->session->into('autors')->load('GoF');
-        $this->session->into('books')->with('numbered')->generate(10);
+        $this->session->into('books')->with('DesignPattern-N')->generate(10);
         
         $books = (new BookRepository($this->connection))->findAll();
         $this->assertCount(10, $books);
         $this->assertEquals("Design Pattern 1", $book[0]->getTitle());
         
         $this->assertNotNull($book[0]->getAuthor());
+    }
 ```
 
 NOTE: Non-null foreign key constraints are randomly resolved if not present.
@@ -83,18 +77,10 @@ You can use inline fixture instead of predefined one:
 
 ```php
         $this->session->into('autors')->load([
-            [
-                'name' => "Erich Gamma",
-            ],
-            [
-                'name' => "Richard Helm",
-            ],
-            [
-                'name' => "Ralph Johnson",
-            ],
-            [
-                'name' => "John Vlissides",
-            ],
+            [ 'name' => "Erich Gamma" ],
+            [ 'name' => "Richard Helm" ],
+            [ 'name' => "Ralph Johnson" ],
+            [ 'name' => "John Vlissides" ],
         ]);
 ```
 
@@ -116,18 +102,10 @@ Common attributes can be set for array form fixture data.
             'specialist' => true,
             'rating' => function($i) { return 80 + $i * 5; },
         ])->load([
-            [
-                'name' => "Erich Gamma",
-            ],
-            [
-                'name' => "Richard Helm",
-            ],
-            [
-                'name' => "Ralph Johnson",
-            ],
-            [
-                'name' => "John Vlissides",
-            ],
+            [ 'name' => "Erich Gamma" ],
+            [ 'name' => "Richard Helm" ],
+            [ 'name' => "Ralph Johnson" ],
+            [ 'name' => "John Vlissides" ],
         ]);
 ```
 
@@ -149,7 +127,7 @@ These are deleted automatically when the next session would use the same table.
 Attributes are overridden as left one over right one. Overridden function are not evaluated, so unnecessary slow calculations can be passed.
 
 ```php
-        $this->session->into('books')->with('GoF')->with([
+        $this->session->into('books')->with('DesignPattern-N')->with([
             'title' => function($i) {
                 return 'Design Pattern -2nd Edition- ' . ($i + 1);
             },
