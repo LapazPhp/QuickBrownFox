@@ -8,6 +8,6 @@ class RandomBoolean extends AbstractRandomValue
      */
     public function getAt($index)
     {
-        return $this->fakerDataGenerator->boolean();
+        return $this->randomValueGenerator->boolean();
     }
 }

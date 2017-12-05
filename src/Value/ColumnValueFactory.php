@@ -4,7 +4,7 @@ namespace Lapaz\QuickBrownFox\Value;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Schema\Column;
 use Doctrine\DBAL\Types\Type;
-use Faker\Generator;
+use Faker\Generator as RandomValueGenerator;
 
 class ColumnValueFactory
 {
@@ -36,15 +36,15 @@ class ColumnValueFactory
     protected $connection;
 
     /**
-     * @var Generator
+     * @var RandomValueGenerator
      */
     protected $randomValueGenerator;
 
     /**
      * @param Connection $connection
-     * @param Generator $randomValueGenerator
+     * @param RandomValueGenerator $randomValueGenerator
      */
-    public function __construct(Connection $connection, Generator $randomValueGenerator)
+    public function __construct(Connection $connection, RandomValueGenerator $randomValueGenerator)
     {
         $this->connection = $connection;
         $this->randomValueGenerator = $randomValueGenerator;

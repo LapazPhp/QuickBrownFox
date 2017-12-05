@@ -10,7 +10,7 @@ class RandomTime extends AbstractRandomValue
     {
         return \DateTime::createFromFormat(
             'H:i:s',
-            $this->fakerDataGenerator->time()
+            $this->randomValueGenerator->time()
         );
     }
 }

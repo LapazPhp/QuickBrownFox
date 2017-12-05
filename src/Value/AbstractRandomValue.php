@@ -2,7 +2,7 @@
 namespace Lapaz\QuickBrownFox\Value;
 
 use Doctrine\DBAL\Schema\Column;
-use Faker\Generator;
+use Faker\Generator as RandomValueGenerator;
 
 abstract class AbstractRandomValue implements ValueProviderInterface
 {
@@ -10,18 +10,19 @@ abstract class AbstractRandomValue implements ValueProviderInterface
      * @var Column
      */
     protected $column;
-    /**
-     * @var Generator
-     */
-    protected $fakerDataGenerator;
 
     /**
-     * @param Generator $fakerDataGenerator
+     * @var RandomValueGenerator
+     */
+    protected $randomValueGenerator;
+
+    /**
+     * @param RandomValueGenerator $randomValueGenerator
      * @param Column $column
      */
-    public function __construct(Generator $fakerDataGenerator, Column $column)
+    public function __construct(RandomValueGenerator $randomValueGenerator, Column $column)
     {
-        $this->fakerDataGenerator = $fakerDataGenerator;
+        $this->randomValueGenerator = $randomValueGenerator;
         $this->column = $column;
     }
 }

@@ -8,6 +8,6 @@ class RandomFloat extends AbstractRandomValue
      */
     public function getAt($index)
     {
-        return $this->fakerDataGenerator->randomFloat();
+        return $this->randomValueGenerator->randomFloat();
     }
 }

@@ -11,6 +11,6 @@ class RandomNumber extends AbstractRandomValue
         $length = $this->column->getLength();
         // Digits must be within integer limit.
         $length = min($length, strlen(mt_getrandmax()) - 1);
-        return $this->fakerDataGenerator->randomNumber($length);
+        return $this->randomValueGenerator->randomNumber($length);
     }
 }

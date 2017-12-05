@@ -10,7 +10,7 @@ class RandomDate extends AbstractRandomValue
     {
         return \DateTime::createFromFormat(
             'Y-m-d',
-            $this->fakerDataGenerator->date()
+            $this->randomValueGenerator->date()
         );
     }
 }

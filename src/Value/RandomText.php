@@ -8,6 +8,6 @@ class RandomText extends AbstractRandomValue
      */
     public function getAt($index)
     {
-        return $this->fakerDataGenerator->paragraph();
+        return $this->randomValueGenerator->paragraph();
     }
 }
