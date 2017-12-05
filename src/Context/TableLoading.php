@@ -1,12 +1,13 @@
 <?php
 namespace Lapaz\QuickBrownFox\Context;
 
-use Lapaz\QuickBrownFox\Fixture\GeneratorSupportedFixture;
 use Lapaz\QuickBrownFox\Fixture\FixedArrayFixture;
 use Lapaz\QuickBrownFox\Fixture\FixtureRepository;
 use Lapaz\QuickBrownFox\Fixture\GeneratedRecordFixture;
+use Lapaz\QuickBrownFox\Fixture\GeneratorSupportedFixture;
 use Lapaz\QuickBrownFox\Generator\GeneratorComposite;
 use Lapaz\QuickBrownFox\Generator\GeneratorRepository;
+use Lapaz\QuickBrownFox\LoaderSession;
 
 class TableLoading
 {

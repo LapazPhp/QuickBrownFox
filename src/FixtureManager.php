@@ -3,18 +3,12 @@ namespace Lapaz\QuickBrownFox;
 
 use Doctrine\DBAL\Connection;
 use Faker\Factory;
+use Lapaz\QuickBrownFox\Context\TableDefinition;
+use Lapaz\QuickBrownFox\Database\TablePrototypeGeneratorBuilder;
 use Lapaz\QuickBrownFox\Fixture\FixtureRepository;
 use Lapaz\QuickBrownFox\Generator\GeneratorRepository;
-use Lapaz\QuickBrownFox\Fixture\Loader;
-use Lapaz\QuickBrownFox\Context\TableDefinition;
-use Lapaz\QuickBrownFox\Context\LoaderSession;
-use Lapaz\QuickBrownFox\Context\RepositoryAggregateInterface;
-use Lapaz\QuickBrownFox\Generator\TablePrototypeGeneratorBuilder;
 
-/**
- * Class FixtureManager
- */
-class FixtureManager implements RepositoryAggregateInterface
+class FixtureManager
 {
     /**
      * @var string
@@ -97,9 +91,12 @@ class FixtureManager implements RepositoryAggregateInterface
             $this->currentSession->terminate();
         }
 
-        $prototypeBuilder = new TablePrototypeGeneratorBuilder($connection, Factory::create($this->locale));
-        $loader = new Loader($connection, $prototypeBuilder);
-        $this->currentSession = new LoaderSession($this, $loader);
+        $builder = new TablePrototypeGeneratorBuilder(
+            $connection,
+            Factory::create($this->locale)
+        );
+
+        $this->currentSession = new LoaderSession($connection, $this, $builder);
 
         return $this->currentSession;
     }

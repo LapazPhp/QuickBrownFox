@@ -1,9 +1,11 @@
 <?php
-namespace Lapaz\QuickBrownFox\Generator;
+namespace Lapaz\QuickBrownFox\Database;
 
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Schema\Column;
 use Faker\Generator as RandomValueGenerator;
+use Lapaz\QuickBrownFox\Generator\GeneratorInterface;
+use Lapaz\QuickBrownFox\Generator\ValueSetGenerator;
 use Lapaz\QuickBrownFox\Value\ColumnValueFactory;
 use Lapaz\QuickBrownFox\Value\ValueProviderInterface;
 

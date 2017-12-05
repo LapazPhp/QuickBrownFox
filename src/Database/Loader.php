@@ -1,10 +1,9 @@
 <?php
-namespace Lapaz\QuickBrownFox\Fixture;
+namespace Lapaz\QuickBrownFox\Database;
 
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\DBALException;
 use Lapaz\QuickBrownFox\Exception\DatabaseException;
-use Lapaz\QuickBrownFox\Generator\TablePrototypeGeneratorBuilder;
 
 class Loader
 {
@@ -14,18 +13,11 @@ class Loader
     protected $connection;
 
     /**
-     * @var TablePrototypeGeneratorBuilder
-     */
-    protected $prototypeBuilder;
-
-    /**
      * @param Connection $connection
-     * @param TablePrototypeGeneratorBuilder $prototypeBuilder
      */
-    public function __construct(Connection $connection, TablePrototypeGeneratorBuilder $prototypeBuilder)
+    public function __construct(Connection $connection)
     {
         $this->connection = $connection;
-        $this->prototypeBuilder = $prototypeBuilder;
     }
 
     /**
@@ -77,14 +69,5 @@ class Loader
             }
         }
         return $types;
-    }
-
-    /**
-     * @param string $table
-     * @return \Lapaz\QuickBrownFox\Generator\GeneratorInterface
-     */
-    public function createPrototypeGenerator($table)
-    {
-        return $this->prototypeBuilder->build($table);
     }
 }

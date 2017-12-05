@@ -1,7 +1,6 @@
 <?php
-namespace Lapaz\QuickBrownFox\Generator;
+namespace Lapaz\QuickBrownFox\Database;
 
-use Lapaz\QuickBrownFox\Fixture\Loader;
 use Lapaz\QuickBrownFox\Value\ForeignKeyReferencedValue;
 use Lapaz\QuickBrownFox\Value\ValueProviderInterface;
 

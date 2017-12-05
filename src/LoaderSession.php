@@ -1,14 +1,17 @@
 <?php
-namespace Lapaz\QuickBrownFox\Context;
+namespace Lapaz\QuickBrownFox;
 
+use Doctrine\DBAL\Connection;
+use Lapaz\QuickBrownFox\Context\TableLoading;
+use Lapaz\QuickBrownFox\Database\Loader;
+use Lapaz\QuickBrownFox\Database\TablePrototypeGeneratorBuilder;
 use Lapaz\QuickBrownFox\Exception\UnexpectedStateException;
 use Lapaz\QuickBrownFox\Fixture\FixtureInterface;
-use Lapaz\QuickBrownFox\Fixture\Loader;
 
 class LoaderSession
 {
     /**
-     * @var RepositoryAggregateInterface
+     * @var FixtureManager
      */
     protected $manager;
 
@@ -16,6 +19,11 @@ class LoaderSession
      * @var Loader
      */
     protected $loader;
+
+    /**
+     * @var TablePrototypeGeneratorBuilder
+     */
+    private $prototypeBuilder;
 
     /**
      * @var string
@@ -28,13 +36,20 @@ class LoaderSession
     protected $terminated;
 
     /**
-     * @param RepositoryAggregateInterface $manager
-     * @param Loader $loader
+     * @param Connection $connection
+     * @param FixtureManager $manager
+     * @param TablePrototypeGeneratorBuilder $prototypeBuilder
      */
-    public function __construct(RepositoryAggregateInterface $manager, Loader $loader)
+    public function __construct(
+        Connection $connection,
+        FixtureManager $manager,
+        TablePrototypeGeneratorBuilder $prototypeBuilder
+    )
     {
         $this->manager = $manager;
-        $this->loader = $loader;
+        $this->loader = new Loader($connection);
+        $this->prototypeBuilder = $prototypeBuilder;
+
         $this->reloadedTables = [];
         $this->terminated = false;
     }
@@ -80,7 +95,7 @@ class LoaderSession
         }
 
         $records = $fixtureSource->generateRecords(
-            $this->loader->createPrototypeGenerator($table),
+            $this->prototypeBuilder->build($table),
             $baseIndex
         );
 
