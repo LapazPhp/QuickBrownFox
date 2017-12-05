@@ -12,7 +12,7 @@ In PHPUnit `bootstrap.php`, define some common rules:
 <?php
 $fixtureManager = new \Lapaz\QuickBrownFox\FixtureManager();
 
-$fixtureManager->table('author', function ($td) {
+$fixtureManager->table('authors', function ($td) {
     $td->fixture('GoF')->define([
         [ 'name' => "Erich Gamma" ],
         [ 'name' => "Richard Helm" ],
@@ -21,7 +21,7 @@ $fixtureManager->table('author', function ($td) {
     ]);
 });
 
-$fixtureManager->table('book', function ($td) {
+$fixtureManager->table('books', function ($td) {
     $td->generator('DesignPattern-N')->define(function($i) {
         return [
             'title' => 'Design Pattern ' . ($i + 1),
@@ -59,7 +59,7 @@ Add tests using predefined fixtures and generators:
 ```php
     public function testFindBook()
     {
-        $this->session->into('autors')->load('GoF');
+        $this->session->into('authors')->load('GoF');
         $this->session->into('books')->with('DesignPattern-N')->generate(10);
         
         $books = (new BookRepository($this->connection))->findAll();
@@ -76,7 +76,7 @@ NOTE: Non-null foreign key constraints are randomly resolved if not present.
 You can use inline fixture instead of predefined one:
 
 ```php
-        $this->session->into('autors')->load([
+        $this->session->into('authors')->load([
             [ 'name' => "Erich Gamma" ],
             [ 'name' => "Richard Helm" ],
             [ 'name' => "Ralph Johnson" ],
@@ -98,7 +98,7 @@ And inline generator:
 Common attributes can be set for array form fixture data.
 
 ```php
-        $this->session->into('autors')->with([
+        $this->session->into('authors')->with([
             'specialist' => true,
             'rating' => function($i) { return 80 + $i * 5; },
         ])->load([
@@ -113,12 +113,12 @@ You can append extra data repeatedly within a session.
 These are deleted automatically when the next session would use the same table.
 
 ```php
-        $this->session->into('autors')->with([
+        $this->session->into('authors')->with([
             'specialist' => false,
             'rating' => function() { return mt_rand(30, 50); },
         ])->generate(6));
 
-        $this->session->into('autors')->with([
+        $this->session->into('authors')->with([
             'specialist' => false,
             'rating' => function() { return mt_rand(30, 50); },
         ])->generate(6));
