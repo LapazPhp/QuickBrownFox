@@ -1,4 +1,14 @@
 {
+    "name": "lapaz/quick-brown-fox",
+    "description": "ORM independent RDB fixture data generator",
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Hisateru Tanaka",
+            "email": "tanakahisateru@gmail.com"
+        }
+    ],
     "require": {
         "php": "^5.6 || ^7.0",
         "doctrine/dbal": "^2.5",
