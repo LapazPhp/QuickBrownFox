@@ -79,7 +79,12 @@ class LoaderSession
             $this->reloadedTables[$table] = true;
         }
 
-        return $this->loader->load($table, $fixtureSource, $baseIndex);
+        $records = $fixtureSource->generateRecords(
+            $this->loader->createPrototypeGenerator($table),
+            $baseIndex
+        );
+
+        return $this->loader->load($table, $records);
     }
 
     /**

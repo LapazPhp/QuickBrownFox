@@ -239,6 +239,20 @@ class FixtureManagerTest extends TestCase
         $this->assertCount(2, $rows);
     }
 
+    public function testExistingForeignRecord()
+    {
+        $session = $this->manager->newSession($this->connection);
+
+        $session->intoTable('foo_parent')->generate(2);
+
+        $session->intoTable('foo')->generate(3);
+
+        $rows = $this->connection->fetchAll("SELECT * FROM foo;");
+        $this->assertEquals(1, $rows[0]['parent_id']);
+        $this->assertEquals(2, $rows[1]['parent_id']);
+        $this->assertEquals(1, $rows[2]['parent_id']);
+    }
+
     protected function setUp()
     {
         $url = 'sqlite:::memory:';
@@ -269,13 +283,13 @@ class FixtureManagerTest extends TestCase
         $this->connection->exec("
             DROP TABLE IF EXISTS foo;
             DROP TABLE IF EXISTS foo_parent;
-            -- CREATE TABLE foo_parent (
-            --   id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-            --   string1 VARCHAR(255) NOT NULL
-            -- );
+            CREATE TABLE foo_parent (
+              id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+              string1 VARCHAR(255) NOT NULL
+            );
             CREATE TABLE foo (
               id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-              -- parent_id INTEGER NOT NULL,
+              parent_id INTEGER NOT NULL,
               number1 INTEGER(11) NOT NULL,
               number2 INTEGER(11) NOT NULL DEFAULT 1,
               number3 INTEGER(11) NULL,
@@ -294,8 +308,8 @@ class FixtureManagerTest extends TestCase
               date1 DATE NOT NULL,
               time1 TIME NOT NULL,
               datetime1 DATETIME NOT NULL
-              -- ,
-              -- FOREIGN KEY(parent_id) REFERENCES foo_parent(id)
+              ,
+              FOREIGN KEY(parent_id) REFERENCES foo_parent(id)
             );
         ");
     }

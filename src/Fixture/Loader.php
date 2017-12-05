@@ -43,15 +43,11 @@ class Loader
 
     /**
      * @param string $table
-     * @param FixtureInterface $fixtureSource
-     * @param int|null $baseIndex
+     * @param array $records
      * @return array
      */
-    public function load($table, FixtureInterface $fixtureSource, $baseIndex = null)
+    public function load($table, array $records)
     {
-        $prototype = $this->prototypeBuilder->build($table);
-        $records = $fixtureSource->generateRecords($prototype, $baseIndex);
-
         $primaryKeys = [];
         foreach ($records as $record) {
             $this->connection->insert(
@@ -83,4 +79,12 @@ class Loader
         return $types;
     }
 
+    /**
+     * @param string $table
+     * @return \Lapaz\QuickBrownFox\Generator\GeneratorInterface
+     */
+    public function createPrototypeGenerator($table)
+    {
+        return $this->prototypeBuilder->build($table);
+    }
 }

@@ -5,6 +5,7 @@ use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Schema\Column;
 use Faker\Generator as RandomValueGenerator;
 use Lapaz\QuickBrownFox\Value\ColumnValueFactory;
+use Lapaz\QuickBrownFox\Value\ValueProviderInterface;
 
 class TablePrototypeGeneratorBuilder
 {
@@ -35,24 +36,75 @@ class TablePrototypeGeneratorBuilder
     }
 
     /**
+     * @return Connection
+     */
+    public function getConnection()
+    {
+        return $this->connection;
+    }
+
+    /**
      * @param string $table
      * @return GeneratorInterface
      */
     public function build($table)
     {
+        return new ValueSetGenerator(array_merge(
+            $this->normalColumnValueProviders($table),
+            $this->foreignKeyColumnValueProviders($table)
+        ));
+    }
+
+    /**
+     * @param string $table
+     * @return ValueProviderInterface[]
+     */
+    protected function normalColumnValueProviders($table)
+    {
         $schemaManager = $this->connection->getSchemaManager();
         $columns = $schemaManager->listTableColumns($table);
 
-        $generators = [];
-
+        $valueProviders = [];
         foreach ($columns as $column) {
             $name = $column->getName();
             if ($this->isValueRequiredFor($column)) {
-                $generators[$name] = $this->columnValueFactory->createFor($column);
+                $valueProviders[$name] = $this->columnValueFactory->createFor($column);
             }
         }
+        return $valueProviders;
+    }
 
-        return new ValueSetGenerator($generators);
+    /**
+     * @param string $table
+     * @return ValueProviderInterface[]
+     */
+    protected function foreignKeyColumnValueProviders($table)
+    {
+        $schemaManager = $this->connection->getSchemaManager();
+        $columns = $schemaManager->listTableColumns($table);
+
+        $foreignKeys = $schemaManager->listTableForeignKeys($table);
+
+        $valueProviders = [];
+        foreach ($foreignKeys as $foreignKey) {
+            $fkLocalColumns = array_map(function ($name) use ($columns) {
+                return $columns[$name];
+            }, $foreignKey->getLocalColumns());
+
+            if ($this->isValueRequiredAny($fkLocalColumns)) {
+                $fetcher = new ForeignTableFetcher(
+                    $foreignKey->getForeignTableName(),
+                    array_combine($foreignKey->getLocalColumns(), $foreignKey->getForeignColumns()),
+                    $this
+                );
+                $foreignKeyReferencedValues = $fetcher->createValueProviders();
+
+                foreach ($foreignKeyReferencedValues as $column => $valueProvider) {
+                    $valueProviders[$column] = $valueProvider;
+                }
+            }
+        }
+        return $valueProviders;
     }
 
     /**
@@ -64,6 +116,17 @@ class TablePrototypeGeneratorBuilder
         return $column->getNotnull() && $column->getDefault() === null && !$column->getAutoincrement();
     }
 
-    // TODO Add foreign key resolver
-    // hasForeignKeyConstraint
+    /**
+     * @param Column[] $columns
+     * @return bool
+     */
+    protected function isValueRequiredAny(array $columns)
+    {
+        foreach ($columns as $column) {
+            if ($this->isValueRequiredFor($column)) {
+                return true;
+            }
+        }
+        return false;
+    }
 }
