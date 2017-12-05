@@ -2,10 +2,13 @@
 namespace Lapaz\QuickBrownFox;
 
 use Doctrine\DBAL\Connection;
+use Doctrine\DBAL\DBALException;
+use Doctrine\DBAL\DriverManager;
 use Faker\Factory as RandomValueFactory;
 use Faker\Generator as RandomValueGenerator;
 use Lapaz\QuickBrownFox\Context\TableDefinition;
 use Lapaz\QuickBrownFox\Database\TablePrototypeGeneratorBuilder;
+use Lapaz\QuickBrownFox\Exception\DatabaseException;
 use Lapaz\QuickBrownFox\Fixture\FixtureRepository;
 use Lapaz\QuickBrownFox\Generator\GeneratorRepository;
 
@@ -83,11 +86,19 @@ class FixtureManager
     }
 
     /**
-     * @param Connection $connection
+     * @param Connection|\PDO $connection
      * @return FixtureSetupSession
      */
-    public function newSession(Connection $connection)
+    public function newSession($connection)
     {
+        if (!($connection instanceof Connection)) {
+            try {
+                $connection = DriverManager::getConnection(['pdo' => $connection]);
+            } catch (DBALException $e) {
+                throw DatabaseException::fromDBALException($e);
+            }
+        }
+
         if ($this->currentSession) {
             $this->currentSession->terminate();
         }
