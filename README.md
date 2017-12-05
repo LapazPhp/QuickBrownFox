@@ -133,3 +133,21 @@ Attributes are overridden as left one over right one. Overridden function are no
             },
         ])->generate(10);
 ```
+
+If you don't care each attributes, you can do simply:
+
+```php
+        $this->session->into('books')->generate(100);
+```
+
+But when there might be some property constraint, you can define table level generator rule:
+
+```php
+$fixtureManager->table('books', function ($td) {
+    $td->defaults([
+        'type' => function() {
+            return mt_rand(1, 3); // books.type must be 1, 2 or 3
+        }
+    ]);
+});
+```
