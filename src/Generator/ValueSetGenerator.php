@@ -1,8 +1,8 @@
 <?php
 namespace Lapaz\QuickBrownFox\Generator;
 
-use Lapaz\QuickBrownFox\Value\ValueProviderInterface;
 use Lapaz\QuickBrownFox\Value\ValueNormalizer;
+use Lapaz\QuickBrownFox\Value\ValueProviderInterface;
 
 class ValueSetGenerator implements GeneratorInterface
 {

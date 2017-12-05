@@ -1,9 +1,9 @@
 <?php
 namespace Lapaz\QuickBrownFox\Fixture;
 
-use Lapaz\QuickBrownFox\Generator\ValueSetGenerator;
 use Lapaz\QuickBrownFox\Generator\GeneratorComposite;
 use Lapaz\QuickBrownFox\Generator\GeneratorInterface;
+use Lapaz\QuickBrownFox\Generator\ValueSetGenerator;
 
 class FixedArrayFixture implements FixtureInterface
 {

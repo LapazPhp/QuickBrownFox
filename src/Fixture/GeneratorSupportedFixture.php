@@ -1,7 +1,6 @@
 <?php
 namespace Lapaz\QuickBrownFox\Fixture;
 
-
 use Lapaz\QuickBrownFox\Generator\GeneratorComposite;
 use Lapaz\QuickBrownFox\Generator\GeneratorInterface;
 
