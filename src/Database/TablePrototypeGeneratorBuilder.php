@@ -3,6 +3,7 @@ namespace Lapaz\QuickBrownFox\Database;
 
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Schema\Column;
+use Doctrine\DBAL\Schema\ForeignKeyConstraint;
 use Faker\Generator as RandomValueGenerator;
 use Lapaz\QuickBrownFox\Generator\GeneratorInterface;
 use Lapaz\QuickBrownFox\Generator\ValueSetGenerator;
@@ -27,9 +28,14 @@ class TablePrototypeGeneratorBuilder
     protected $columnValueFactory;
 
     /**
-     * @var GeneratorInterface[]
+     * @var Column[][]
      */
-    protected $prototypeGeneratorMap;
+    protected $valueRequiredColumnsMap;
+
+    /**
+     * @var ForeignKeyConstraint[][]
+     */
+    protected $valueRequiredForeignKeysMap;
 
     /**
      * @param Connection $connection
@@ -40,7 +46,8 @@ class TablePrototypeGeneratorBuilder
         $this->connection = $connection;
         $this->randomValueGenerator = $randomValueGenerator;
         $this->columnValueFactory = new ColumnValueFactory($connection, $randomValueGenerator);
-        $this->prototypeGeneratorMap = [];
+        $this->valueRequiredColumnsMap = [];
+        $this->valueRequiredForeignKeysMap = [];
     }
 
     /**
@@ -57,14 +64,10 @@ class TablePrototypeGeneratorBuilder
      */
     public function build($table)
     {
-        if (!isset($this->prototypeGeneratorMap[$table])) {
-            $this->prototypeGeneratorMap[$table] = new ValueSetGenerator(array_merge(
-                $this->normalColumnValueProviders($table),
-                $this->foreignKeyColumnValueProviders($table)
-            ));
-        }
-
-        return $this->prototypeGeneratorMap[$table];
+        return new ValueSetGenerator(array_merge(
+            $this->normalColumnValueProviders($table),
+            $this->foreignKeyColumnValueProviders($table)
+        ));
     }
 
     /**
@@ -73,50 +76,32 @@ class TablePrototypeGeneratorBuilder
      */
     protected function normalColumnValueProviders($table)
     {
-        $schemaManager = $this->connection->getSchemaManager();
-        $columns = $schemaManager->listTableColumns($table);
-
         $valueProviders = [];
-        foreach ($columns as $column) {
-            $name = $column->getName();
-            if ($this->isValueRequiredFor($column)) {
-                $valueProviders[$name] = $this->columnValueFactory->createFor($column);
-            }
+        foreach ($this->valueRequiredColumns($table) as $column) {
+            $valueProviders[$column->getName()] = $this->columnValueFactory->createFor($column);
         }
         return $valueProviders;
     }
 
     /**
      * @param string $table
-     * @return ValueProviderInterface[]
+     * @return Column[]
      */
-    protected function foreignKeyColumnValueProviders($table)
+    protected function valueRequiredColumns($table)
     {
-        $schemaManager = $this->connection->getSchemaManager();
-        $columns = $schemaManager->listTableColumns($table);
+        if (!isset($this->valueRequiredColumnsMap[$table])) {
+            $schemaManager = $this->connection->getSchemaManager();
+            $columns = $schemaManager->listTableColumns($table);
 
-        $foreignKeys = $schemaManager->listTableForeignKeys($table);
-
-        $valueProviders = [];
-        foreach ($foreignKeys as $foreignKey) {
-            $fkLocalColumns = array_map(function ($name) use ($columns) {
-                return $columns[$name];
-            }, $foreignKey->getLocalColumns());
-
-            if ($this->isValueRequiredAny($fkLocalColumns)) {
-                $fetcher = new ForeignTableFetcher(
-                    $foreignKey->getForeignTableName(),
-                    array_combine($foreignKey->getLocalColumns(), $foreignKey->getForeignColumns()),
-                    $this
-                );
-                $foreignKeyReferencedValues = $fetcher->createValueProviders();
-
-                foreach ($foreignKeyReferencedValues as $column => $valueProvider) {
-                    $valueProviders[$column] = $valueProvider;
+            $valueRequiredColumns = [];
+            foreach ($columns as $column) {
+                if ($this->isValueRequiredFor($column)) {
+                    $valueRequiredColumns[] = $column;
                 }
             }
+            $this->valueRequiredColumnsMap[$table] = $valueRequiredColumns;
         }
-        return $valueProviders;
+        return $this->valueRequiredColumnsMap[$table];
     }
 
     /**
@@ -126,6 +111,53 @@ class TablePrototypeGeneratorBuilder
     protected function isValueRequiredFor(Column $column)
     {
         return $column->getNotnull() && $column->getDefault() === null && !$column->getAutoincrement();
+    }
+
+    /**
+     * @param string $table
+     * @return ValueProviderInterface[]
+     */
+    protected function foreignKeyColumnValueProviders($table)
+    {
+        $valueProviders = [];
+        foreach ($this->valueRequiredForeignKeys($table) as $foreignKey) {
+            // $fetcher must be created for every load() because it depends current table status.
+            $fetcher = new ForeignTableFetcher(
+                $foreignKey->getForeignTableName(),
+                array_combine($foreignKey->getLocalColumns(), $foreignKey->getForeignColumns()),
+                $this
+            );
+            foreach ($fetcher->createValueProviders() as $column => $valueProvider) {
+                $valueProviders[$column] = $valueProvider;
+            }
+        }
+        return $valueProviders;
+    }
+
+    /**
+     * @param string $table
+     * @return ForeignKeyConstraint[]
+     */
+    protected function valueRequiredForeignKeys($table)
+    {
+        if (!isset($this->valueRequiredForeignKeysMap[$table])) {
+            $schemaManager = $this->connection->getSchemaManager();
+            $columns = $schemaManager->listTableColumns($table);
+            $foreignKeys = $schemaManager->listTableForeignKeys($table);
+
+            $valueRequiredForeignKeys = [];
+            foreach ($foreignKeys as $foreignKey) {
+                $localColumns = array_map(function ($name) use ($columns) {
+                    return $columns[$name];
+                }, $foreignKey->getLocalColumns());
+
+                if ($this->isValueRequiredAny($localColumns)) {
+                    $valueRequiredForeignKeys[] = $foreignKey;
+                }
+            }
+            $this->valueRequiredForeignKeysMap[$table] = $valueRequiredForeignKeys;
+        }
+        return $this->valueRequiredForeignKeysMap[$table];
     }
 
     /**
