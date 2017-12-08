@@ -2,11 +2,14 @@
 namespace Lapaz\QuickBrownFox;
 
 use Doctrine\DBAL\Connection;
+use Doctrine\DBAL\DBALException;
+use Doctrine\DBAL\DriverManager;
 use Faker\Factory as RandomValueFactory;
 use Faker\Generator as RandomValueGenerator;
 use Lapaz\QuickBrownFox\Context\TableDefinition;
 use Lapaz\QuickBrownFox\Database\RepositoryAggregateInterface;
 use Lapaz\QuickBrownFox\Database\SessionManager;
+use Lapaz\QuickBrownFox\Exception\DatabaseException;
 use Lapaz\QuickBrownFox\Fixture\FixtureRepository;
 use Lapaz\QuickBrownFox\Generator\GeneratorRepository;
 
@@ -91,6 +94,14 @@ class FixtureManager implements RepositoryAggregateInterface
      */
     public function createSessionManager($connection)
     {
+        if (!($connection instanceof Connection)) {
+            try {
+                $connection = DriverManager::getConnection(['pdo' => $connection]);
+            } catch (DBALException $e) {
+                throw DatabaseException::fromDBALException($e);
+            }
+        }
+
         return new SessionManager($this, $connection);
     }
 }
