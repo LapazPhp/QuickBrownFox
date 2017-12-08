@@ -6,29 +6,35 @@ ORM independent RDB fixture data generator.
 
 ## Usage
 
-In PHPUnit `bootstrap.php`, define some common rules:
+Define some common rules while building bootstrap environment for your tests:
 
 ```php
 <?php
-$fixtureManager = new \Lapaz\QuickBrownFox\FixtureManager();
-
-$fixtureManager->table('authors', function ($td) {
-    $td->fixture('GoF')->define([
-        [ 'name' => "Erich Gamma" ],
-        [ 'name' => "Richard Helm" ],
-        [ 'name' => "Ralph Johnson" ],
-        [ 'name' => "John Vlissides" ],
-    ]);
-});
-
-$fixtureManager->table('books', function ($td) {
-    $td->generator('DesignPattern-N')->define(function($i) {
-        return [
-            'title' => 'Design Pattern ' . ($i + 1),
-            'code' => sprintf('000-000-%03d', $i),
-            // not needed: 'author_id' => ?
-        ];
+// $container points some application scope service locator
+$container->set(\Lapaz\QuickBrownFox\Database\SessionManager::class, function() use ($container) {
+    $fixtures = new \Lapaz\QuickBrownFox\FixtureManager();
+    
+    $fixtures->table('authors', function ($td) {
+        $td->fixture('GoF')->define([
+            [ 'name' => "Erich Gamma" ],
+            [ 'name' => "Richard Helm" ],
+            [ 'name' => "Ralph Johnson" ],
+            [ 'name' => "John Vlissides" ],
+        ]);
     });
+    
+    $fixtures->table('books', function ($td) {
+        $td->generator('DesignPattern-N')->define(function($i) {
+            return [
+                'title' => 'Design Pattern ' . ($i + 1),
+                'code' => sprintf('000-000-%03d', $i),
+                // not needed: 'author_id' => ?
+            ];
+        });
+    });
+    
+    // 'database' must be DBAL connection or PDO
+    return $fixtures->createSessionManager($container->get('database'));
 });
 ```
 
@@ -41,15 +47,11 @@ use PHPUnit\Framework\TestCase;
 class BookRepositoryTest extends TestCase
 {
     protected $session;
-    protected $connection;
     
     protected function setUp()
     {
-        global $fixtureManager;
-        // Create some singleton like accessor if you hate **global** statement.
-        
-        $this->connection = new PDO('...');
-        $this->session = $fixtureManager->newSession($this->connection);
+        /** @var ContainerInterface $container */
+        $this->session = $container->get(\Lapaz\QuickBrownFox\Database\SessionManager::class)->newSession();
     }
 }
 ```
@@ -143,11 +145,11 @@ If you don't care each attributes, you can do simply:
 But when there might be some property constraint, you can define table level generator rule:
 
 ```php
-$fixtureManager->table('books', function ($td) {
-    $td->defaults([
-        'type' => function() {
-            return mt_rand(1, 3); // books.type must be 1, 2 or 3
-        }
-    ]);
-});
+    $fixtures->table('books', function ($td) {
+        $td->defaults([
+            'type' => function() {
+                return mt_rand(1, 3); // books.type must be 1, 2 or 3
+            }
+        ]);
+    });
 ```

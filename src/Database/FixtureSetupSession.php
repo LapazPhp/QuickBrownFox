@@ -1,20 +1,17 @@
 <?php
-namespace Lapaz\QuickBrownFox;
+namespace Lapaz\QuickBrownFox\Database;
 
-use Doctrine\DBAL\Connection;
 use Lapaz\QuickBrownFox\Context\FixtureLoadableInterface;
 use Lapaz\QuickBrownFox\Context\TableLoading;
-use Lapaz\QuickBrownFox\Database\Loader;
-use Lapaz\QuickBrownFox\Database\TablePrototypeGeneratorBuilder;
 use Lapaz\QuickBrownFox\Exception\UnexpectedStateException;
 use Lapaz\QuickBrownFox\Fixture\FixtureInterface;
 
 class FixtureSetupSession implements FixtureLoadableInterface
 {
     /**
-     * @var FixtureManager
+     * @var RepositoryAggregateInterface
      */
-    protected $manager;
+    protected $repositoryAggregate;
 
     /**
      * @var Loader
@@ -37,18 +34,18 @@ class FixtureSetupSession implements FixtureLoadableInterface
     protected $terminated;
 
     /**
-     * @param Connection $connection
-     * @param FixtureManager $manager
+     * @param RepositoryAggregateInterface $repositoryAggregate
+     * @param Loader $loader
      * @param TablePrototypeGeneratorBuilder $prototypeBuilder
      */
     public function __construct(
-        Connection $connection,
-        FixtureManager $manager,
+        RepositoryAggregateInterface $repositoryAggregate,
+        Loader $loader,
         TablePrototypeGeneratorBuilder $prototypeBuilder
     )
     {
-        $this->manager = $manager;
-        $this->loader = new Loader($connection);
+        $this->repositoryAggregate = $repositoryAggregate;
+        $this->loader = $loader;
         $this->prototypeBuilder = $prototypeBuilder;
 
         $this->reloadedTables = [];
@@ -64,8 +61,8 @@ class FixtureSetupSession implements FixtureLoadableInterface
         return new TableLoading(
             $this,
             $table,
-            $this->manager->getFixtureRepositoryFor($table),
-            $this->manager->getGeneratorRepositoryFor($table)
+            $this->repositoryAggregate->getFixtureRepositoryFor($table),
+            $this->repositoryAggregate->getGeneratorRepositoryFor($table)
         );
     }
 

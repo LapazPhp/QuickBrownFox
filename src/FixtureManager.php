@@ -2,17 +2,15 @@
 namespace Lapaz\QuickBrownFox;
 
 use Doctrine\DBAL\Connection;
-use Doctrine\DBAL\DBALException;
-use Doctrine\DBAL\DriverManager;
 use Faker\Factory as RandomValueFactory;
 use Faker\Generator as RandomValueGenerator;
 use Lapaz\QuickBrownFox\Context\TableDefinition;
-use Lapaz\QuickBrownFox\Database\TablePrototypeGeneratorBuilder;
-use Lapaz\QuickBrownFox\Exception\DatabaseException;
+use Lapaz\QuickBrownFox\Database\RepositoryAggregateInterface;
+use Lapaz\QuickBrownFox\Database\SessionManager;
 use Lapaz\QuickBrownFox\Fixture\FixtureRepository;
 use Lapaz\QuickBrownFox\Generator\GeneratorRepository;
 
-class FixtureManager
+class FixtureManager implements RepositoryAggregateInterface
 {
     /**
      * @var FixtureRepository[]
@@ -30,11 +28,6 @@ class FixtureManager
     protected $randomValueGenerator;
 
     /**
-     * @var FixtureSetupSession
-     */
-    protected $currentSession;
-
-    /**
      * @param string $locale
      */
     public function __construct($locale = RandomValueFactory::DEFAULT_LOCALE)
@@ -43,7 +36,6 @@ class FixtureManager
 
         $this->fixtureRepositories = [];
         $this->generatorRepositories = [];
-        $this->currentSession = null;
     }
 
     /**
@@ -73,6 +65,14 @@ class FixtureManager
     }
 
     /**
+     * @return RandomValueGenerator
+     */
+    public function getRandomValueGenerator()
+    {
+        return $this->randomValueGenerator;
+    }
+
+    /**
      * @param string $table
      * @param callable $callable
      */
@@ -87,41 +87,10 @@ class FixtureManager
 
     /**
      * @param Connection|\PDO $connection
-     * @return FixtureSetupSession
+     * @return SessionManager
      */
-    public function newSession($connection)
+    public function createSessionManager($connection)
     {
-        if (!($connection instanceof Connection)) {
-            try {
-                $connection = DriverManager::getConnection(['pdo' => $connection]);
-            } catch (DBALException $e) {
-                throw DatabaseException::fromDBALException($e);
-            }
-        }
-
-        if ($this->currentSession) {
-            $this->currentSession->terminate();
-        }
-
-        $builder = new TablePrototypeGeneratorBuilder(
-            $connection,
-            $this->randomValueGenerator
-        );
-
-        $this->currentSession = new FixtureSetupSession($connection, $this, $builder);
-
-        return $this->currentSession;
+        return new SessionManager($this, $connection);
     }
-
-//    /**
-//     * @return LoaderSession
-//     */
-//    public function getCurrentSession()
-//    {
-//        if (!$this->currentSession) {
-//            $this->newSession();
-//        }
-//
-//        return $this->currentSession;
-//    }
 }

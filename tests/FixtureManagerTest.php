@@ -28,7 +28,7 @@ class FixtureManagerTest extends TestCase
 
     public function testTruncate()
     {
-        $session = $this->manager->newSession($this->connection);
+        $session = $this->newSession();
         $session->reset('foo_parent');
         $session->reset('foo');
 
@@ -39,7 +39,7 @@ class FixtureManagerTest extends TestCase
 
     public function testInlineGenerate()
     {
-        $session = $this->manager->newSession($this->connection);
+        $session = $this->newSession();
         $session->into('foo')->generate(10);
 
         $count = $this->connection->fetchColumn("SELECT COUNT(*) FROM foo;");
@@ -56,7 +56,7 @@ class FixtureManagerTest extends TestCase
             ]);
         });
 
-        $session = $this->manager->newSession($this->connection);
+        $session = $this->newSession();
         $session->into('foo')->generate();
 
         $rows = $this->connection->fetchAll("SELECT * FROM foo;");
@@ -79,7 +79,7 @@ class FixtureManagerTest extends TestCase
             ]);
         });
 
-        $session = $this->manager->newSession($this->connection);
+        $session = $this->newSession();
         $session->into('foo')->generate();
         $session->into('foo')->with('10x')->generate();
         $session->into('foo')->with([
@@ -107,7 +107,7 @@ class FixtureManagerTest extends TestCase
             ]);
         });
 
-        $session = $this->manager->newSession($this->connection);
+        $session = $this->newSession();
         $session->into('foo')->with([
             'number3' => function ($i) {
                 return $i;
@@ -142,7 +142,7 @@ class FixtureManagerTest extends TestCase
             ]);
         });
 
-        $session = $this->manager->newSession($this->connection);
+        $session = $this->newSession();
         $session->into('foo')->with('num23')->generate();
         $session->into('foo')->with('num23x10')->generate();
 
@@ -157,7 +157,7 @@ class FixtureManagerTest extends TestCase
 
     public function testInlineFixedArrayFixture()
     {
-        $session = $this->manager->newSession($this->connection);
+        $session = $this->newSession();
         $session->into('foo')->load([
             [
                 'number1' => 1,
@@ -202,7 +202,7 @@ class FixtureManagerTest extends TestCase
             ]);
         });
 
-        $session = $this->manager->newSession($this->connection);
+        $session = $this->newSession();
         $session->into('foo')->load('3rec');
 
         $rows = $this->connection->fetchAll("SELECT * FROM foo;");
@@ -227,7 +227,7 @@ class FixtureManagerTest extends TestCase
             }, 3, 10);
         });
 
-        $session = $this->manager->newSession($this->connection);
+        $session = $this->newSession();
         $session->into('foo')->load('3rec-num2seq');
 
         $rows = $this->connection->fetchAll("SELECT * FROM foo;");
@@ -240,10 +240,10 @@ class FixtureManagerTest extends TestCase
 
     public function testIsolateDifferentSession()
     {
-        $session = $this->manager->newSession($this->connection);
+        $session = $this->newSession();
         $session->into('foo')->generate(10);
 
-        $session = $this->manager->newSession($this->connection);
+        $session = $this->newSession();
         $session->into('foo')->generate(2);
 
         $rows = $this->connection->fetchAll("SELECT * FROM foo;");
@@ -252,7 +252,7 @@ class FixtureManagerTest extends TestCase
 
     public function testExistingForeignRecord()
     {
-        $session = $this->manager->newSession($this->connection);
+        $session = $this->newSession();
 
         $session->into('foo_parent')->generate(2);
 
@@ -262,6 +262,14 @@ class FixtureManagerTest extends TestCase
         $this->assertEquals(1, $rows[0]['parent_id']);
         $this->assertEquals(2, $rows[1]['parent_id']);
         $this->assertEquals(1, $rows[2]['parent_id']);
+    }
+
+    /**
+     * @return Database\FixtureSetupSession
+     */
+    protected function newSession()
+    {
+        return $this->manager->createSessionManager($this->connection)->newSession();
     }
 
     protected function setUp()

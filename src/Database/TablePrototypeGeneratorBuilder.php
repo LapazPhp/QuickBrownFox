@@ -27,6 +27,11 @@ class TablePrototypeGeneratorBuilder
     protected $columnValueFactory;
 
     /**
+     * @var GeneratorInterface[]
+     */
+    protected $prototypeGeneratorMap;
+
+    /**
      * @param Connection $connection
      * @param RandomValueGenerator $randomValueGenerator
      */
@@ -35,6 +40,7 @@ class TablePrototypeGeneratorBuilder
         $this->connection = $connection;
         $this->randomValueGenerator = $randomValueGenerator;
         $this->columnValueFactory = new ColumnValueFactory($connection, $randomValueGenerator);
+        $this->prototypeGeneratorMap = [];
     }
 
     /**
@@ -51,10 +57,14 @@ class TablePrototypeGeneratorBuilder
      */
     public function build($table)
     {
-        return new ValueSetGenerator(array_merge(
-            $this->normalColumnValueProviders($table),
-            $this->foreignKeyColumnValueProviders($table)
-        ));
+        if (!isset($this->prototypeGeneratorMap[$table])) {
+            $this->prototypeGeneratorMap[$table] = new ValueSetGenerator(array_merge(
+                $this->normalColumnValueProviders($table),
+                $this->foreignKeyColumnValueProviders($table)
+            ));
+        }
+
+        return $this->prototypeGeneratorMap[$table];
     }
 
     /**

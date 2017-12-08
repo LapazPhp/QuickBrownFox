@@ -13,9 +13,9 @@ class Loader
     protected $connection;
 
     /**
-     * @var string[][]
+     * @var MetadataManager
      */
-    protected $referencingTablesMap;
+    protected $metadataManager;
 
     /**
      * @param Connection $connection
@@ -23,8 +23,7 @@ class Loader
     public function __construct(Connection $connection)
     {
         $this->connection = $connection;
-
-        $this->referencingTablesMap = null;
+        $this->metadataManager = new MetadataManager($this->connection);
     }
 
     /**
@@ -32,47 +31,15 @@ class Loader
      */
     public function resetCascading($table)
     {
+        foreach ($this->metadataManager->getReferencingTables($table) as $referencingTable) {
+            $this->resetCascading($referencingTable);
+        }
+        // TODO Allow custom reset strategy
+
         try {
-            // TODO Allow custom reset strategy
-            $this->ensureReferencingForeignTablesMap();
-            if (isset($this->referencingTablesMap[$table])) {
-                foreach ($this->referencingTablesMap[$table] as $restrictingTable) {
-                    $this->resetCascading($restrictingTable);
-                }
-            }
             $this->connection->executeUpdate("DELETE FROM " . $this->connection->quoteIdentifier($table));
         } catch (DBALException $e) {
             throw DatabaseException::fromDBALException($e);
-        }
-    }
-
-    /**
-     *
-     */
-    protected function ensureReferencingForeignTablesMap()
-    {
-        if ($this->referencingTablesMap !== null) {
-            return;
-        }
-
-        $this->referencingTablesMap = [];
-
-        $schemaManager = $this->connection->getSchemaManager();
-        $tables = $schemaManager->listTableNames();
-        foreach ($tables as $referencingTableName) {
-            $fks = $schemaManager->listTableForeignKeys($referencingTableName);
-            foreach ($fks as $fk) {
-                $foreignTableName = $fk->getForeignTableName();
-                if (
-                    $referencingTableName !== $foreignTableName &&
-                    !(
-                        isset($this->referencingTablesMap[$foreignTableName]) &&
-                        in_array($referencingTableName, $this->referencingTablesMap[$foreignTableName])
-                    )
-                ) {
-                    $this->referencingTablesMap[$foreignTableName][] = $referencingTableName;
-                }
-            }
         }
     }
 
@@ -83,34 +50,16 @@ class Loader
      */
     public function load($table, array $records)
     {
+        $columnTypes = $this->metadataManager->getColumnTypes($table);
         $primaryKeys = [];
         foreach ($records as $record) {
-            $this->connection->insert(
-                $table,
-                $record,
-                $this->fieldTypes($table, array_keys($record))
-            );
+            $types = array_map(function ($column) use ($columnTypes) {
+                return $columnTypes[$column];
+            }, array_keys($record));
+
+            $this->connection->insert($table, $record, $types);
             $primaryKeys[] = $this->connection->lastInsertId();
         }
         return $primaryKeys;
-    }
-
-    /**
-     * @param string $table
-     * @param string[] $fields
-     * @return string[]
-     */
-    private function fieldTypes($table, $fields)
-    {
-        $schemaManager = $this->connection->getSchemaManager();
-        $columns = $schemaManager->listTableColumns($table);
-        $types = [];
-        foreach ($columns as $column) {
-            $name = $column->getName();
-            if (in_array($name, $fields)) {
-                $types[$name] = $column->getType()->getName();
-            }
-        }
-        return $types;
     }
 }
