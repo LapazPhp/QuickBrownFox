@@ -13,11 +13,18 @@ class Loader
     protected $connection;
 
     /**
+     * @var string[][]
+     */
+    protected $referencingTablesMap;
+
+    /**
      * @param Connection $connection
      */
     public function __construct(Connection $connection)
     {
         $this->connection = $connection;
+
+        $this->referencingTablesMap = null;
     }
 
     /**
@@ -27,9 +34,11 @@ class Loader
     {
         try {
             // TODO Allow custom reset strategy
-            $restrictingTables = $this->findForeignRestrictingTables($table);
-            foreach ($restrictingTables as $restrictingTable) {
-                $this->resetCascading($restrictingTable);
+            $this->ensureReferencingForeignTablesMap();
+            if (isset($this->referencingTablesMap[$table])) {
+                foreach ($this->referencingTablesMap[$table] as $restrictingTable) {
+                    $this->resetCascading($restrictingTable);
+                }
             }
             $this->connection->executeUpdate("DELETE FROM " . $this->connection->quoteIdentifier($table));
         } catch (DBALException $e) {
@@ -38,24 +47,33 @@ class Loader
     }
 
     /**
-     * @param string $targetTableName
-     * @return string[]
+     *
      */
-    protected function findForeignRestrictingTables($targetTableName)
+    protected function ensureReferencingForeignTablesMap()
     {
-        $restrictingTables = [];
+        if ($this->referencingTablesMap !== null) {
+            return;
+        }
 
-        $tables = $this->connection->getSchemaManager()->listTables();
-        foreach ($tables as $table) {
-            $fks = $table->getForeignKeys();
+        $this->referencingTablesMap = [];
+
+        $schemaManager = $this->connection->getSchemaManager();
+        $tables = $schemaManager->listTableNames();
+        foreach ($tables as $referencingTableName) {
+            $fks = $schemaManager->listTableForeignKeys($referencingTableName);
             foreach ($fks as $fk) {
-                if ($fk->getForeignTableName() === $targetTableName) {
-                    $restrictingTables[] = $table->getName();
+                $foreignTableName = $fk->getForeignTableName();
+                if (
+                    $referencingTableName !== $foreignTableName &&
+                    !(
+                        isset($this->referencingTablesMap[$foreignTableName]) &&
+                        in_array($referencingTableName, $this->referencingTablesMap[$foreignTableName])
+                    )
+                ) {
+                    $this->referencingTablesMap[$foreignTableName][] = $referencingTableName;
                 }
             }
         }
-
-        return $restrictingTables;
     }
 
     /**
