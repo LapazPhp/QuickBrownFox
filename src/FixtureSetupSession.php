@@ -72,9 +72,9 @@ class FixtureSetupSession implements FixtureLoadableInterface
     /**
      * @param string $table
      */
-    public function truncate($table)
+    public function reset($table)
     {
-        $this->loader->truncate($table);
+        $this->loader->resetCascading($table);
         $this->reloadedTables[$table] = true;
     }
 
@@ -91,7 +91,7 @@ class FixtureSetupSession implements FixtureLoadableInterface
         }
 
         if (!isset($this->reloadedTables[$table])) {
-            $this->loader->truncate($table);
+            $this->loader->resetCascading($table);
             $this->reloadedTables[$table] = true;
         }
 

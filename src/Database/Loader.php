@@ -23,14 +23,39 @@ class Loader
     /**
      * @param string $table
      */
-    public function truncate($table)
+    public function resetCascading($table)
     {
         try {
-            $sql = $this->connection->getDatabasePlatform()->getTruncateTableSQL($table);
-            $this->connection->exec($sql);
+            // TODO Allow custom reset strategy
+            $restrictingTables = $this->findForeignRestrictingTables($table);
+            foreach ($restrictingTables as $restrictingTable) {
+                $this->resetCascading($restrictingTable);
+            }
+            $this->connection->executeUpdate("DELETE FROM " . $this->connection->quoteIdentifier($table));
         } catch (DBALException $e) {
             throw DatabaseException::fromDBALException($e);
         }
+    }
+
+    /**
+     * @param string $targetTableName
+     * @return string[]
+     */
+    protected function findForeignRestrictingTables($targetTableName)
+    {
+        $restrictingTables = [];
+
+        $tables = $this->connection->getSchemaManager()->listTables();
+        foreach ($tables as $table) {
+            $fks = $table->getForeignKeys();
+            foreach ($fks as $fk) {
+                if ($fk->getForeignTableName() === $targetTableName) {
+                    $restrictingTables[] = $table->getName();
+                }
+            }
+        }
+
+        return $restrictingTables;
     }
 
     /**

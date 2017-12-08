@@ -29,7 +29,7 @@ class FixtureManagerTest extends TestCase
     public function testTruncate()
     {
         $session = $this->manager->newSession($this->connection);
-        $session->truncate('foo');
+        $session->reset('foo');
 
         $count = $this->connection->fetchColumn("SELECT COUNT(*) FROM foo;");
 
