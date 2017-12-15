@@ -3,6 +3,9 @@ namespace Lapaz\QuickBrownFox\Generator;
 
 use Lapaz\QuickBrownFox\Value\ValueProviderInterface;
 
+/**
+ * Generator creates a property set for single record by sequential index number.
+ */
 interface GeneratorInterface
 {
     /**

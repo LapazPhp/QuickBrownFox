@@ -8,19 +8,25 @@ use Lapaz\QuickBrownFox\Generator\GeneratorRepository;
 interface RepositoryAggregateInterface
 {
     /**
-     * @param string $table
-     * @return FixtureRepository
+     * Returns fixture repository for specified table.
+     *
+     * @param string $table Table name
+     * @return FixtureRepository Table assigned repository of fixture data.
      */
     public function getFixtureRepositoryFor($table);
 
     /**
-     * @param string $table
-     * @return GeneratorRepository
+     * Returns generator repository for specified table.
+     *
+     * @param string $table Table name
+     * @return GeneratorRepository Table assigned repository of data generators.
      */
     public function getGeneratorRepositoryFor($table);
 
     /**
-     * @return RandomValueGenerator
+     * Returns random value generator implementation, actually Faker's Generator object.
+     *
+     * @return RandomValueGenerator Random value generator object
      */
     public function getRandomValueGenerator();
 }

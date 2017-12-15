@@ -3,6 +3,9 @@ namespace Lapaz\QuickBrownFox\Context;
 
 use Lapaz\QuickBrownFox\Fixture\FixtureInterface;
 
+/**
+ * Loader
+ */
 interface FixtureLoadableInterface
 {
     /**

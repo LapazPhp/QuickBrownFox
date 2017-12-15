@@ -4,6 +4,9 @@ namespace Lapaz\QuickBrownFox\Context;
 use Lapaz\QuickBrownFox\Fixture\FixtureRepository;
 use Lapaz\QuickBrownFox\Generator\GeneratorRepository;
 
+/**
+ * Table definition context object.
+ */
 class TableDefinition
 {
     /**
@@ -27,6 +30,8 @@ class TableDefinition
     }
 
     /**
+     * Starts the table default definition.
+     *
      * @return TableDefaultsDefinition
      */
     public function defaults()
@@ -35,6 +40,8 @@ class TableDefinition
     }
 
     /**
+     * Starts a predefined table generator definition.
+     *
      * @param string $name
      * @return TableGeneratorDefinition
      */
@@ -44,6 +51,8 @@ class TableDefinition
     }
 
     /**
+     * Starts a predefined table fixture definition.
+     *
      * @param string $name
      * @return TableFixtureDefinition
      */

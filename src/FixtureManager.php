@@ -13,6 +13,16 @@ use Lapaz\QuickBrownFox\Exception\DatabaseException;
 use Lapaz\QuickBrownFox\Fixture\FixtureRepository;
 use Lapaz\QuickBrownFox\Generator\GeneratorRepository;
 
+/**
+ * FixtureManager is the root object of fixture management workflow. This
+ * object contains predefined generator/fixture repositories for database
+ * tables.
+ *
+ * It can create a session manager. The fixture setup session which corresponds
+ * a test case must be isolated from other test cases. SessionManager object
+ * creates a new session for your test scenario. You can load several fixtures
+ * within a single session at once.
+ */
 class FixtureManager implements RepositoryAggregateInterface
 {
     /**
@@ -31,7 +41,9 @@ class FixtureManager implements RepositoryAggregateInterface
     protected $randomValueGenerator;
 
     /**
-     * @param string $locale
+     * Creates initialized FixtureManager.
+     *
+     * @param string $locale Locale of randomly generated text e.g. 'ja_JP'
      */
     public function __construct($locale = RandomValueFactory::DEFAULT_LOCALE)
     {
@@ -42,8 +54,7 @@ class FixtureManager implements RepositoryAggregateInterface
     }
 
     /**
-     * @param string $table
-     * @return FixtureRepository
+     * @inheritdoc
      */
     public function getFixtureRepositoryFor($table)
     {
@@ -56,8 +67,7 @@ class FixtureManager implements RepositoryAggregateInterface
     }
 
     /**
-     * @param string $table
-     * @return GeneratorRepository
+     * @inheritdoc
      */
     public function getGeneratorRepositoryFor($table)
     {
@@ -68,7 +78,7 @@ class FixtureManager implements RepositoryAggregateInterface
     }
 
     /**
-     * @return RandomValueGenerator
+     * @inheritdoc
      */
     public function getRandomValueGenerator()
     {
@@ -76,8 +86,11 @@ class FixtureManager implements RepositoryAggregateInterface
     }
 
     /**
-     * @param string $table
-     * @param callable $callable
+     * Defines table fixtures and generators by callable which takes
+     * TableDefinition instance.
+     *
+     * @param string $table Table name
+     * @param callable $callable Definition procedure callback
      */
     public function table($table, $callable)
     {
@@ -89,8 +102,11 @@ class FixtureManager implements RepositoryAggregateInterface
     }
 
     /**
-     * @param Connection|\PDO $connection
-     * @return SessionManager
+     * Creates a session manager from database connection.
+     * It allows both of PDO and Doctrine DBAL.
+     *
+     * @param Connection|\PDO $connection Database connection
+     * @return SessionManager Session manager
      */
     public function createSessionManager($connection)
     {

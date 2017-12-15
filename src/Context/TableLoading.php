@@ -8,6 +8,9 @@ use Lapaz\QuickBrownFox\Fixture\GeneratorSupportedFixture;
 use Lapaz\QuickBrownFox\Generator\GeneratorComposite;
 use Lapaz\QuickBrownFox\Generator\GeneratorRepository;
 
+/**
+ * Fixture loading context for the table.
+ */
 class TableLoading
 {
     use WithContextTrait;
@@ -54,6 +57,8 @@ class TableLoading
     }
 
     /**
+     * Inserts records filled by data produced by stacked Generators.
+     *
      * @param int $amount
      * @param int $baseIndex
      * @return array
@@ -69,6 +74,9 @@ class TableLoading
     }
 
     /**
+     * Inserts records filled by fixed data specified by array.
+     * Unspecified column value produced by Generator stack implicitly.
+     *
      * @param string|array $fixture
      * @param int|null $baseIndex
      * @return array
