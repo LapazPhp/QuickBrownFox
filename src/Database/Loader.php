@@ -57,7 +57,11 @@ class Loader
                 return $columnTypes[$column];
             }, array_keys($record));
 
-            $this->connection->insert($table, $record, $types);
+            try {
+                $this->connection->insert($table, $record, $types);
+            } catch (DBALException $e) {
+                throw DatabaseException::fromDBALException($e);
+            }
             $primaryKeys[] = $this->connection->lastInsertId();
         }
         return $primaryKeys;

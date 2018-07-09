@@ -26,6 +26,9 @@ class FixtureManagerTest extends TestCase
      */
     protected $manager;
 
+    /**
+     * @throws DBALException
+     */
     public function testTruncate()
     {
         $session = $this->newSession();
@@ -37,6 +40,9 @@ class FixtureManagerTest extends TestCase
         $this->assertEquals(0, $count);
     }
 
+    /**
+     * @throws DBALException
+     */
     public function testInlineGenerate()
     {
         $session = $this->newSession();
