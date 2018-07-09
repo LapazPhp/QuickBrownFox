@@ -8,6 +8,6 @@ class RandomDateTime extends AbstractRandomValue
      */
     public function getAt($index)
     {
-        return $this->randomValueGenerator->dateTime();
+        return $this->randomValueGenerator->dateTime;
     }
 }
