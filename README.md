@@ -9,7 +9,6 @@ ORM independent RDB fixture data generator.
 Define some common rules while building bootstrap environment for your tests:
 
 ```php
-<?php
 // $container points some application scope service locator
 $container->set(\Lapaz\QuickBrownFox\Database\SessionManager::class, function() use ($container) {
     $fixtures = new \Lapaz\QuickBrownFox\FixtureManager();
@@ -41,7 +40,6 @@ $container->set(\Lapaz\QuickBrownFox\Database\SessionManager::class, function() 
 Prepare new test session:
 
 ```php
-<?php
 use PHPUnit\Framework\TestCase;
 
 class BookRepositoryTest extends TestCase
