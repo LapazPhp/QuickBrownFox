@@ -63,6 +63,7 @@ class Loader
                 throw DatabaseException::fromDBALException($e);
             }
             $primaryKeys[] = $this->connection->lastInsertId();
+            // FIXME Check when single ID not presented (UUID, complex pk or such as)
         }
         return $primaryKeys;
     }
