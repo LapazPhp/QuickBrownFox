@@ -38,7 +38,7 @@ class SessionManager
 
         $this->prototypeBuilder = new TablePrototypeGeneratorBuilder(
             $connection,
-            $repositoryAggregate->getRandomValueGenerator()
+            $repositoryAggregate
         );
 
         $this->loader = new Loader($connection);

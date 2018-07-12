@@ -4,7 +4,7 @@ namespace Lapaz\QuickBrownFox\Database;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Schema\Column;
 use Doctrine\DBAL\Schema\ForeignKeyConstraint;
-use Faker\Generator as RandomValueGenerator;
+use Lapaz\QuickBrownFox\Generator\GeneratorComposite;
 use Lapaz\QuickBrownFox\Generator\GeneratorInterface;
 use Lapaz\QuickBrownFox\Generator\ValueSetGenerator;
 use Lapaz\QuickBrownFox\Value\ColumnValueFactory;
@@ -18,9 +18,9 @@ class TablePrototypeGeneratorBuilder
     protected $connection;
 
     /**
-     * @var RandomValueGenerator
+     * @var RepositoryAggregateInterface
      */
-    protected $randomValueGenerator;
+    protected $repositoryAggregare;
 
     /**
      * @var ColumnValueFactory
@@ -39,13 +39,16 @@ class TablePrototypeGeneratorBuilder
 
     /**
      * @param Connection $connection
-     * @param RandomValueGenerator $randomValueGenerator
+     * @param RepositoryAggregateInterface $repositoryAggregare
      */
-    public function __construct(Connection $connection, RandomValueGenerator $randomValueGenerator)
+    public function __construct(Connection $connection, RepositoryAggregateInterface $repositoryAggregare)
     {
         $this->connection = $connection;
-        $this->randomValueGenerator = $randomValueGenerator;
-        $this->columnValueFactory = new ColumnValueFactory($connection, $randomValueGenerator);
+        $this->repositoryAggregare = $repositoryAggregare;
+        $this->columnValueFactory = new ColumnValueFactory(
+            $connection,
+            $repositoryAggregare->getRandomValueGenerator()
+        );
         $this->valueRequiredColumnsMap = [];
         $this->valueRequiredForeignKeysMap = [];
     }
@@ -64,10 +67,21 @@ class TablePrototypeGeneratorBuilder
      */
     public function build($table)
     {
-        return new ValueSetGenerator(array_merge(
+        $prototypeGenerator = new ValueSetGenerator(array_merge(
             $this->normalColumnValueProviders($table),
             $this->foreignKeyColumnValueProviders($table)
         ));
+
+        $generatorrepository = $this->repositoryAggregare->getGeneratorRepositoryFor($table);
+        $tableDefaultsGeneratoer = $generatorrepository->getTableDefaults();
+        if ($tableDefaultsGeneratoer) {
+            $prototypeGenerator = new GeneratorComposite([
+                $prototypeGenerator,
+                $tableDefaultsGeneratoer,
+            ]);
+        }
+
+        return $prototypeGenerator;
     }
 
     /**

@@ -49,11 +49,6 @@ class TableLoading
 
         $this->generatorRepository = $generatorRepository;
         $this->generators = [];
-
-        $tableDefaults = $this->generatorRepository->getTableDefaults();
-        if ($tableDefaults) {
-            $this->generators[] = $tableDefaults;
-        }
     }
 
     /**
