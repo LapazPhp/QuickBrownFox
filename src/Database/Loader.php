@@ -58,7 +58,11 @@ class Loader
             }, array_keys($record));
 
             try {
-                $this->connection->insert($table, $record, $types);
+                $affectedRows = $this->connection->insert($table, $record, $types);
+                if ($affectedRows < 1) {
+                    throw new DatabaseException('INSERT was sent but actually no rows affected');
+                }
+                // More than 2 rows may be affected successfully by DB trigger.
             } catch (DBALException $e) {
                 throw DatabaseException::fromDBALException($e);
             }
