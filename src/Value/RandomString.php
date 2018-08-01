@@ -10,6 +10,11 @@ class RandomString extends AbstractRandomValue
     {
         $length = $this->column->getLength();
         $length = min($length, $this->randomValueGenerator->numberBetween(5, $length));
-        return $this->randomValueGenerator->text($length);
+
+        if ($this->column->getFixed()) {
+            return $this->randomValueGenerator->lexify(str_repeat('?', $length));
+        } else {
+            return $this->randomValueGenerator->text($length);
+        }
     }
 }
