@@ -11,6 +11,11 @@ class RandomDecimal extends AbstractRandomValue
         $precision = $this->column->getPrecision();
         $scale = $this->column->getScale();
         $max = pow(10.0, $precision - $scale);
-        return $this->randomValueGenerator->randomFloat($scale, 0, $max);
+        $value = $this->randomValueGenerator->randomFloat($scale, 0, $max);
+        if (!$this->column->getUnsigned() && $this->randomValueGenerator->boolean()) {
+            return $value * -1;
+        } else {
+            return $value;
+        }
     }
 }
