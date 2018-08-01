@@ -3,6 +3,7 @@ namespace Lapaz\QuickBrownFox\Database;
 
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\DBALException;
+use Doctrine\DBAL\Types\Type;
 use Lapaz\QuickBrownFox\Exception\DatabaseException;
 
 class Loader
@@ -53,9 +54,13 @@ class Loader
         $columnTypes = $this->metadataManager->getColumnTypes($table);
         $primaryKeys = [];
         foreach ($records as $record) {
-            $types = array_map(function ($column) use ($columnTypes) {
-                return $columnTypes[$column];
-            }, array_keys($record));
+            $types = [];
+            foreach (array_keys($record) as $column) {
+                $types[$column] = $columnTypes[$column];
+            }
+
+            // Avoid PDO MySQL bug
+            list($record, $types) = $this->phpBug38546RemapBooleanToIntForPDOMySQL($record, $types);
 
             try {
                 $affectedRows = $this->connection->insert($table, $record, $types);
@@ -70,5 +75,35 @@ class Loader
             // FIXME Check when single ID not presented (UUID, complex pk or such as)
         }
         return $primaryKeys;
+    }
+
+    /**
+     * Workaround: This method replaces BOOL to INT for MySQL prepared statement.
+     * PDO's type system has a bug around boolean when MySQL ATTR_EMULATE_PREPARES off.
+     * If \PDO::PARAM_BOOL specified for INSERT or UPDATE, the SQL would be ignored.
+     *
+     * https://bugs.php.net/bug.php?id=38546
+     *
+     * @param array $record
+     * @param array $types
+     * @return array
+     */
+    private function phpBug38546RemapBooleanToIntForPDOMySQL($record, $types)
+    {
+        if ($this->connection->getDriver()->getName() === 'pdo_mysql') {
+            return [$record, $types];
+        }
+
+        foreach (array_keys($types) as $column) {
+            if ($types[$column] === Type::BOOLEAN) {
+                $types[$column] = Type::INTEGER;
+                if (isset($record[$column])) {
+                    // Ensure integer value if the field is not NULL.
+                    $record[$column] = intval($record[$column]);
+                }
+            }
+        }
+
+        return [$record, $types];
     }
 }
