@@ -18,7 +18,7 @@ class ColumnValueFactory
         Type::DATETIMETZ => RandomDateTime::class,
         Type::DATE => RandomDate::class,
         Type::TIME => RandomTime::class,
-        Type::DECIMAL => RandomNumber::class,
+        Type::DECIMAL => RandomDecimal::class,
         Type::INTEGER => RandomNumber::class,
         Type::OBJECT => UnsupportedType::class,
         Type::SMALLINT => RandomNumber::class,
@@ -26,7 +26,7 @@ class ColumnValueFactory
         Type::TEXT => RandomText::class,
         Type::BINARY => UnsupportedType::class,
         Type::BLOB => UnsupportedType::class,
-        Type::FLOAT => RandomFloat::class,
+        Type::FLOAT => RandomDecimal::class,
         Type::GUID => UnsupportedType::class,
     ];
 
