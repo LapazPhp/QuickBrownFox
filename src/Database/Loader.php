@@ -90,7 +90,7 @@ class Loader
      */
     private function phpBug38546RemapBooleanToIntForPDOMySQL($record, $types)
     {
-        if ($this->connection->getDriver()->getName() === 'pdo_mysql') {
+        if ($this->connection->getDriver()->getName() !== 'pdo_mysql') {
             return [$record, $types];
         }
 
