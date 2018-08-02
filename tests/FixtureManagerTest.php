@@ -330,6 +330,7 @@ class FixtureManagerTest extends TestCase
               string1 VARCHAR(255) NOT NULL,
               string2 VARCHAR(255) NOT NULL DEFAULT '',
               string3 VARCHAR(255) NULL,
+              short_string1 VARCHAR(4) NOT NULL,
               text1 TEXT NOT NULL,
               text2 TEXT NOT NULL DEFAULT '',
               text3 TEXT NULL,
