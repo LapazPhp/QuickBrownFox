@@ -1,6 +1,7 @@
 <?php
 namespace Lapaz\QuickBrownFox\Database;
 
+use Doctrine\DBAL\Exception as DBALException;
 use Lapaz\QuickBrownFox\Value\ForeignKeyReferencedValue;
 use Lapaz\QuickBrownFox\Value\ValueProviderInterface;
 
@@ -57,6 +58,7 @@ class ForeignTableFetcher implements ValueProviderInterface
     /**
      * @param int $index
      * @return array
+     * @throws DBALException
      */
     public function getAt($index)
     {
@@ -66,6 +68,7 @@ class ForeignTableFetcher implements ValueProviderInterface
 
     /**
      * @param int $maxAmount
+     * @throws DBALException
      */
     private function ensureForeignRecords($maxAmount)
     {
@@ -81,7 +84,7 @@ class ForeignTableFetcher implements ValueProviderInterface
 
         $table = $connection->quoteIdentifier($this->table);
 
-        $this->foreignRecords = $connection->fetchAll("SELECT {$fields} FROM {$table} LIMIT {$maxAmount}");
+        $this->foreignRecords = $connection->fetchAllAssociative("SELECT {$fields} FROM {$table} LIMIT {$maxAmount}");
 
         if (!empty($this->foreignRecords)) {
             return;
@@ -93,6 +96,6 @@ class ForeignTableFetcher implements ValueProviderInterface
         $loader = new Loader($connection);
         $loader->load($this->table, [$record]);
 
-        $this->foreignRecords = $connection->fetchAll("SELECT {$fields} FROM {$table} LIMIT {$maxAmount}");
+        $this->foreignRecords = $connection->fetchAllAssociative("SELECT {$fields} FROM {$table} LIMIT {$maxAmount}");
     }
 }

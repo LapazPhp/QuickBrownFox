@@ -2,8 +2,9 @@
 namespace Lapaz\QuickBrownFox\Database;
 
 use Doctrine\DBAL\Connection;
-use Doctrine\DBAL\DBALException;
-use Doctrine\DBAL\Types\Type;
+use Doctrine\DBAL\Driver\PDO\MySQL\Driver as PDOMySQLDriver;
+use Doctrine\DBAL\Exception as DBALException;
+use Doctrine\DBAL\Types\Types;
 use Lapaz\QuickBrownFox\Exception\DatabaseException;
 
 class Loader
@@ -38,7 +39,7 @@ class Loader
         // TODO Allow custom reset strategy
 
         try {
-            $this->connection->executeUpdate("DELETE FROM " . $this->connection->quoteIdentifier($table));
+            $this->connection->executeStatement("DELETE FROM " . $this->connection->quoteIdentifier($table));
         } catch (DBALException $e) {
             throw DatabaseException::fromDBALException($e);
         }
@@ -90,13 +91,13 @@ class Loader
      */
     private function phpBug38546RemapBooleanToIntForPDOMySQL($record, $types)
     {
-        if ($this->connection->getDriver()->getName() !== 'pdo_mysql') {
+        if ($this->connection->getDriver() instanceof PDOMySQLDriver) {
             return [$record, $types];
         }
 
         foreach (array_keys($types) as $column) {
-            if ($types[$column] === Type::BOOLEAN) {
-                $types[$column] = Type::INTEGER;
+            if ($types[$column] === Types::BOOLEAN) {
+                $types[$column] = Types::INTEGER;
                 if (isset($record[$column])) {
                     // Ensure integer value if the field is not NULL.
                     $record[$column] = intval($record[$column]);

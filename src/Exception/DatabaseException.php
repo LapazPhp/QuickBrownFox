@@ -1,7 +1,7 @@
 <?php
 namespace Lapaz\QuickBrownFox\Exception;
 
-use Doctrine\DBAL\DBALException;
+use Doctrine\DBAL\Exception;
 
 /**
  * Database exception, actually uncheck version wrapper of DBALException.
@@ -11,9 +11,9 @@ class DatabaseException extends \RuntimeException implements QuickBrownFoxExcept
     /**
      * Creates DatabaseException from DBALException.
      *
-     * @param DBALException $e Real exception from DBAL
+     * @param Exception $e Real exception from DBAL
      */
-    public static function fromDBALException(DBALException $e)
+    public static function fromDBALException(Exception $e)
     {
         throw new static($e->getMessage(), $e->getCode(), $e);
     }

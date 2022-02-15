@@ -2,7 +2,7 @@
 namespace Lapaz\QuickBrownFox;
 
 use Doctrine\DBAL\Connection;
-use Doctrine\DBAL\DBALException;
+use Doctrine\DBAL\Exception as DBALException;
 use Doctrine\DBAL\DriverManager;
 use Doctrine\DBAL\Logging\DebugStack;
 use Doctrine\DBAL\Logging\SQLLogger;
@@ -35,7 +35,7 @@ class FixtureManagerTest extends TestCase
         $session->reset('foo_parent');
         $session->reset('foo');
 
-        $count = $this->connection->fetchColumn("SELECT COUNT(*) FROM foo;");
+        $count = $this->connection->fetchOne("SELECT COUNT(*) FROM foo;");
 
         $this->assertEquals(0, $count);
     }
@@ -48,11 +48,14 @@ class FixtureManagerTest extends TestCase
         $session = $this->newSession();
         $session->into('foo')->generate(10);
 
-        $count = $this->connection->fetchColumn("SELECT COUNT(*) FROM foo;");
+        $count = $this->connection->fetchOne("SELECT COUNT(*) FROM foo;");
 
         $this->assertEquals(10, $count);
     }
 
+    /**
+     * @throws DBALException
+     */
     public function testDefaultGenerator()
     {
         $this->manager->table('foo', function (TableDefinition $td) {
@@ -65,7 +68,7 @@ class FixtureManagerTest extends TestCase
         $session = $this->newSession();
         $session->into('foo')->generate();
 
-        $rows = $this->connection->fetchAll("SELECT * FROM foo;");
+        $rows = $this->connection->fetchAllAssociative("SELECT * FROM foo;");
 
         $this->assertCount(1, $rows);
 
@@ -73,6 +76,9 @@ class FixtureManagerTest extends TestCase
         $this->assertEquals(3, $rows[0]['number3']);
     }
 
+    /**
+     * @throws DBALException
+     */
     public function testPredefinedGenerator()
     {
         $this->manager->table('foo', function (TableDefinition $td) {
@@ -92,7 +98,7 @@ class FixtureManagerTest extends TestCase
             'number3' => 300,
         ])->generate();
 
-        $rows = $this->connection->fetchAll("SELECT * FROM foo ORDER BY id;");
+        $rows = $this->connection->fetchAllAssociative("SELECT * FROM foo ORDER BY id;");
 
         $this->assertEquals(2, $rows[0]['number2']);
         $this->assertEquals(3, $rows[0]['number3']);
@@ -104,6 +110,9 @@ class FixtureManagerTest extends TestCase
         $this->assertEquals(300, $rows[2]['number3']);
     }
 
+    /**
+     * @throws DBALException
+     */
     public function testInlineCallbackGenerator()
     {
         $this->manager->table('foo', function (TableDefinition $td) {
@@ -120,7 +129,7 @@ class FixtureManagerTest extends TestCase
             }
         ])->generate(10, 10);
 
-        $rows = $this->connection->fetchAll("SELECT * FROM foo;");
+        $rows = $this->connection->fetchAllAssociative("SELECT * FROM foo ORDER BY id;");
 
         $this->assertCount(10, $rows);
 
@@ -133,6 +142,9 @@ class FixtureManagerTest extends TestCase
         $this->assertEquals(19, $rows[9]['number3']);
     }
 
+    /**
+     * @throws DBALException
+     */
     public function testPredefinedGeneratorComposition()
     {
         $this->manager->table('foo', function (TableDefinition $td) {
@@ -152,7 +164,7 @@ class FixtureManagerTest extends TestCase
         $session->into('foo')->with('num23')->generate();
         $session->into('foo')->with('num23x10')->generate();
 
-        $rows = $this->connection->fetchAll("SELECT * FROM foo;");
+        $rows = $this->connection->fetchAllAssociative("SELECT * FROM foo;");
 
         $this->assertEquals(2, $rows[0]['number2']);
         $this->assertEquals(3, $rows[0]['number3']);
@@ -161,6 +173,9 @@ class FixtureManagerTest extends TestCase
         $this->assertEquals(30, $rows[1]['number3']);
     }
 
+    /**
+     * @throws DBALException
+     */
     public function testInlineFixedArrayFixture()
     {
         $session = $this->newSession();
@@ -178,7 +193,7 @@ class FixtureManagerTest extends TestCase
             ],
         ]);
 
-        $rows = $this->connection->fetchAll("SELECT * FROM foo;");
+        $rows = $this->connection->fetchAllAssociative("SELECT * FROM foo;");
         $this->assertCount(3, $rows);
 
         $this->assertEquals(1, $rows[0]['number1']);
@@ -190,6 +205,9 @@ class FixtureManagerTest extends TestCase
         $this->assertEquals(3, $rows[2]['number3']);
     }
 
+    /**
+     * @throws DBALException
+     */
     public function testPredefinedFixture()
     {
         $this->manager->table('foo', function (TableDefinition $td) {
@@ -211,7 +229,7 @@ class FixtureManagerTest extends TestCase
         $session = $this->newSession();
         $session->into('foo')->load('3rec');
 
-        $rows = $this->connection->fetchAll("SELECT * FROM foo;");
+        $rows = $this->connection->fetchAllAssociative("SELECT * FROM foo;");
         $this->assertCount(3, $rows);
 
         $this->assertEquals(1, $rows[0]['number1']);
@@ -223,6 +241,9 @@ class FixtureManagerTest extends TestCase
         $this->assertEquals(3, $rows[2]['number3']);
     }
 
+    /**
+     * @throws DBALException
+     */
     public function testPredefinedGeneratedFixture()
     {
         $this->manager->table('foo', function (TableDefinition $td) {
@@ -236,7 +257,7 @@ class FixtureManagerTest extends TestCase
         $session = $this->newSession();
         $session->into('foo')->load('3rec-num2seq');
 
-        $rows = $this->connection->fetchAll("SELECT * FROM foo;");
+        $rows = $this->connection->fetchAllAssociative("SELECT * FROM foo;");
         $this->assertCount(3, $rows);
 
         $this->assertEquals(10, $rows[0]['number2']);
@@ -244,6 +265,9 @@ class FixtureManagerTest extends TestCase
         $this->assertEquals(12, $rows[2]['number2']);
     }
 
+    /**
+     * @throws DBALException
+     */
     public function testIsolateDifferentSession()
     {
         $session = $this->newSession();
@@ -252,10 +276,13 @@ class FixtureManagerTest extends TestCase
         $session = $this->newSession();
         $session->into('foo')->generate(2);
 
-        $rows = $this->connection->fetchAll("SELECT * FROM foo;");
+        $rows = $this->connection->fetchAllAssociative("SELECT * FROM foo;");
         $this->assertCount(2, $rows);
     }
 
+    /**
+     * @throws DBALException
+     */
     public function testExistingForeignRecord()
     {
         $session = $this->newSession();
@@ -264,7 +291,7 @@ class FixtureManagerTest extends TestCase
 
         $session->into('foo')->generate(3);
 
-        $rows = $this->connection->fetchAll("SELECT * FROM foo;");
+        $rows = $this->connection->fetchAllAssociative("SELECT * FROM foo;");
         $this->assertEquals(1, $rows[0]['parent_id']);
         $this->assertEquals(2, $rows[1]['parent_id']);
         $this->assertEquals(1, $rows[2]['parent_id']);
@@ -278,7 +305,7 @@ class FixtureManagerTest extends TestCase
         return $this->manager->createSessionManager($this->connection)->newSession();
     }
 
-    protected function setUp()
+    protected function setUp(): void
     {
         $url = 'sqlite:::memory:';
         // $url = 'sqlite:///' . realpath(__DIR__ . '/..') . '/loader-test.sqlite';
@@ -299,21 +326,21 @@ class FixtureManagerTest extends TestCase
     }
 
     /**
-     * @throws \Doctrine\DBAL\DBALException
+     * @throws DBALException
      */
     protected function setUpSchema()
     {
-        $this->connection->exec("PRAGMA foreign_keys=ON;");
+        $this->connection->executeStatement("PRAGMA foreign_keys=ON;");
 
-        $this->connection->exec("
+        $this->connection->executeStatement("
             DROP TABLE IF EXISTS foo;
             DROP TABLE IF EXISTS foo_parent;
             CREATE TABLE foo_parent (
-              id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+              id INTEGER PRIMARY KEY AUTOINCREMENT,
               string1 VARCHAR(255) NOT NULL
             );
             CREATE TABLE foo (
-              id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+              id INTEGER PRIMARY KEY AUTOINCREMENT,
               parent_id INTEGER NOT NULL,
               number1 INTEGER(11) NOT NULL,
               number2 INTEGER(11) NOT NULL DEFAULT 1,

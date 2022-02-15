@@ -3,31 +3,35 @@ namespace Lapaz\QuickBrownFox\Value;
 
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Schema\Column;
-use Doctrine\DBAL\Types\Type;
+use Doctrine\DBAL\Types\Types;
 use Faker\Generator as RandomValueGenerator;
 
 class ColumnValueFactory
 {
     const GENERATOR_MAPPING = [
-        Type::TARRAY => UnsupportedType::class,
-        Type::SIMPLE_ARRAY => UnsupportedType::class,
-        Type::JSON_ARRAY => UnsupportedType::class,
-        Type::BIGINT => RandomNumber::class,
-        Type::BOOLEAN => RandomBoolean::class,
-        Type::DATETIME => RandomDateTime::class,
-        Type::DATETIMETZ => RandomDateTime::class,
-        Type::DATE => RandomDate::class,
-        Type::TIME => RandomTime::class,
-        Type::DECIMAL => RandomDecimal::class,
-        Type::INTEGER => RandomNumber::class,
-        Type::OBJECT => UnsupportedType::class,
-        Type::SMALLINT => RandomNumber::class,
-        Type::STRING => RandomString::class,
-        Type::TEXT => RandomText::class,
-        Type::BINARY => UnsupportedType::class,
-        Type::BLOB => UnsupportedType::class,
-        Type::FLOAT => RandomDecimal::class,
-        Type::GUID => UnsupportedType::class,
+        Types::ARRAY => UnsupportedType::class,
+        Types::SIMPLE_ARRAY => UnsupportedType::class,
+        Types::JSON => UnsupportedType::class,
+        Types::BIGINT => RandomNumber::class,
+        Types::BOOLEAN => RandomBoolean::class,
+        Types::DATETIME_MUTABLE => RandomDateTime::class,
+        Types::DATETIME_IMMUTABLE => RandomDateTime::class,
+        Types::DATETIMETZ_MUTABLE => RandomDateTime::class,
+        Types::DATETIMETZ_IMMUTABLE => RandomDateTime::class,
+        Types::DATE_MUTABLE => RandomDate::class,
+        Types::DATE_IMMUTABLE => RandomDate::class,
+        Types::TIME_MUTABLE => RandomTime::class,
+        Types::TIME_IMMUTABLE => RandomTime::class,
+        Types::DECIMAL => RandomDecimal::class,
+        Types::INTEGER => RandomNumber::class,
+        Types::OBJECT => UnsupportedType::class,
+        Types::SMALLINT => RandomNumber::class,
+        Types::STRING => RandomString::class,
+        Types::TEXT => RandomText::class,
+        Types::BINARY => UnsupportedType::class,
+        Types::BLOB => UnsupportedType::class,
+        Types::FLOAT => RandomDecimal::class,
+        Types::GUID => UnsupportedType::class,
     ];
 
     /**
