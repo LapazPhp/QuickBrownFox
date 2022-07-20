@@ -1,6 +1,6 @@
 # QuickBrownFox
 
-[![Build Status](https://travis-ci.org/LapazPhp/QuickBrownFox.svg?branch=master)](https://travis-ci.org/LapazPhp/QuickBrownFox)
+[![PHP Composer](https://github.com/LapazPhp/QuickBrownFox/actions/workflows/php.yml/badge.svg?branch=master)](https://github.com/LapazPhp/QuickBrownFox/actions/workflows/php.yml)
 
 ORM independent RDB fixture data generator.
 
