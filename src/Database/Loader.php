@@ -33,16 +33,8 @@ class Loader
      */
     public function resetCascading($table)
     {
-        foreach ($this->metadataManager->getReferencingTables($table) as $referencingTable) {
-            $this->resetCascading($referencingTable);
-        }
-        // TODO Allow custom reset strategy
-
-        try {
-            $this->connection->executeStatement("DELETE FROM " . $this->connection->quoteIdentifier($table));
-        } catch (DBALException $e) {
-            throw DatabaseException::fromDBALException($e);
-        }
+        $cleaner = new TableCleaner($this->connection, $this->metadataManager);
+        $cleaner->clean($table);
     }
 
     /**
