@@ -45,11 +45,11 @@ class TableCleanerTest extends TestCase
         $this->tableCleaner->clean('foo');
 
         $c = $this->connection->executeQuery("SELECT COUNT(*) FROM foo")->fetchOne();
-        $this->assertSame(0, $c);
+        $this->assertEquals(0, $c);
         $c = $this->connection->executeQuery("SELECT COUNT(*) FROM bar")->fetchOne();
-        $this->assertSame(0, $c);
+        $this->assertEquals(0, $c);
         $c = $this->connection->executeQuery("SELECT COUNT(*) FROM baz")->fetchOne();
-        $this->assertSame(0, $c);
+        $this->assertEquals(0, $c);
     }
 
     public function testCleanBottom()
@@ -69,11 +69,11 @@ class TableCleanerTest extends TestCase
         $this->tableCleaner->clean('baz');
 
         $c = $this->connection->executeQuery("SELECT COUNT(*) FROM foo")->fetchOne();
-        $this->assertSame(0, $c);
+        $this->assertEquals(0, $c);
         $c = $this->connection->executeQuery("SELECT COUNT(*) FROM bar")->fetchOne();
-        $this->assertSame(0, $c);
+        $this->assertEquals(0, $c);
         $c = $this->connection->executeQuery("SELECT COUNT(*) FROM baz")->fetchOne();
-        $this->assertSame(0, $c);
+        $this->assertEquals(0, $c);
     }
 
     protected function setUp(): void
