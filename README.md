@@ -32,7 +32,7 @@ $container->set(\Lapaz\QuickBrownFox\Database\SessionManager::class, function() 
         });
     });
     
-    // 'database' must be DBAL connection or PDO
+    // 'database' is params for DBAL DriverManager or connection itself.
     return $fixtures->createSessionManager($container->get('database'));
 });
 ```
