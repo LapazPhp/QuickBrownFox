@@ -7,12 +7,12 @@ use Lapaz\QuickBrownFox\Value\ValueProviderInterface;
 class ValueSetGenerator implements GeneratorInterface
 {
     /**
-     * @var ValueProviderInterface[]
+     * @var array<string,ValueProviderInterface>
      */
-    protected $valueProviders;
+    protected array $valueProviders;
 
     /**
-     * @param array $values
+     * @param array<string,mixed> $values
      */
     public function __construct(array $values)
     {
@@ -20,19 +20,19 @@ class ValueSetGenerator implements GeneratorInterface
     }
 
     /**
-     * @param $index
-     * @return ValueProviderInterface[]
+     * @param int $index
+     * @return array<string,ValueProviderInterface>
      */
-    public function extractAt($index)
+    public function extractAt(int $index): array
     {
         return $this->valueProviders;
     }
 
     /**
      * @param int $index
-     * @return array
+     * @return array<string, mixed>
      */
-    public function generateAt($index)
+    public function generateAt(int $index): array
     {
         $record = [];
         foreach ($this->valueProviders as $field => $valueProvider) {

@@ -8,19 +8,17 @@ use Doctrine\DBAL\Exception as DBALException;
 use Lapaz\QuickBrownFox\Database\MetadataManager;
 use Lapaz\QuickBrownFox\Database\TableCleaner;
 use PHPUnit\Framework\TestCase;
+use RuntimeException;
 
 class TableCleanerTest extends TestCase
 {
-    /**
-     * @var Connection
-     */
-    protected $connection;
+    private Connection $connection;
+
+    private TableCleaner $tableCleaner;
 
     /**
-     * @var TableCleaner
+     * @throws DBALException
      */
-    protected $tableCleaner;
-
     public function testCleanFromTop()
     {
         $this->connection->insert('foo', ['val' => 'foo val']);
@@ -45,6 +43,9 @@ class TableCleanerTest extends TestCase
         $this->assertEquals(0, $c);
     }
 
+    /**
+     * @throws DBALException
+     */
     public function testCleanBottom()
     {
         $this->connection->insert('foo', ['val' => 'foo val']);
@@ -81,7 +82,7 @@ class TableCleanerTest extends TestCase
             ]);
             $this->setUpSchema();
         } catch (DBALException $e) {
-            throw new \RuntimeException($e->getMessage(), $e->getCode(), $e);
+            throw new RuntimeException($e->getMessage(), $e->getCode(), $e);
         }
 
         $this->tableCleaner = new TableCleaner(
@@ -95,7 +96,7 @@ class TableCleanerTest extends TestCase
     /**
      * @throws DBALException
      */
-    protected function setUpSchema()
+    protected function setUpSchema(): void
     {
         $this->connection->executeStatement("PRAGMA foreign_keys=ON;");
 

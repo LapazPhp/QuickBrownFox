@@ -10,23 +10,14 @@ use Lapaz\QuickBrownFox\Generator\GeneratorRepository;
 class TableDefinition
 {
     /**
-     * @var FixtureRepository
-     */
-    protected $fixtureRepository;
-
-    /**
-     * @var GeneratorRepository
-     */
-    protected $generatorRepository;
-
-    /**
      * @param FixtureRepository $fixtureRepository
      * @param GeneratorRepository $generatorRepository
      */
-    public function __construct(FixtureRepository $fixtureRepository, GeneratorRepository $generatorRepository)
+    public function __construct(
+        protected FixtureRepository $fixtureRepository,
+        protected GeneratorRepository $generatorRepository
+    )
     {
-        $this->fixtureRepository = $fixtureRepository;
-        $this->generatorRepository = $generatorRepository;
     }
 
     /**
@@ -34,7 +25,7 @@ class TableDefinition
      *
      * @return TableDefaultsDefinition
      */
-    public function defaults()
+    public function defaults(): TableDefaultsDefinition
     {
         return new TableDefaultsDefinition($this->generatorRepository);
     }
@@ -45,7 +36,7 @@ class TableDefinition
      * @param string $name
      * @return TableGeneratorDefinition
      */
-    public function generator($name)
+    public function generator(string $name): TableGeneratorDefinition
     {
         return new TableGeneratorDefinition($name, $this->generatorRepository);
     }
@@ -56,7 +47,7 @@ class TableDefinition
      * @param string $name
      * @return TableFixtureDefinition
      */
-    public function fixture($name)
+    public function fixture(string $name): TableFixtureDefinition
     {
         return new TableFixtureDefinition($name, $this->fixtureRepository, $this->generatorRepository);
     }

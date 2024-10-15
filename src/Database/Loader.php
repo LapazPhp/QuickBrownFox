@@ -10,28 +10,25 @@ use Lapaz\QuickBrownFox\Exception\DatabaseException;
 class Loader
 {
     /**
-     * @var Connection
-     */
-    protected $connection;
-
-    /**
      * @var MetadataManager
      */
-    protected $metadataManager;
+    protected MetadataManager $metadataManager;
 
     /**
      * @param Connection $connection
      */
-    public function __construct(Connection $connection)
+    public function __construct(
+        protected Connection $connection
+    )
     {
-        $this->connection = $connection;
         $this->metadataManager = new MetadataManager($this->connection);
     }
 
     /**
      * @param string $table
+     * @throws DBALException
      */
-    public function resetCascading($table)
+    public function resetCascading(string $table): void
     {
         $cleaner = new TableCleaner($this->connection, $this->metadataManager);
         $cleaner->clean($table);
@@ -39,10 +36,11 @@ class Loader
 
     /**
      * @param string $table
-     * @param array $records
-     * @return array
+     * @param list<array<string,mixed>> $records
+     * @return list<int|string>
+     * @throws DBALException
      */
-    public function load($table, array $records)
+    public function load(string $table, array $records): array
     {
         $columnTypes = $this->metadataManager->getColumnTypes($table);
         $primaryKeys = [];
@@ -81,7 +79,7 @@ class Loader
      * @param array $types
      * @return array
      */
-    private function phpBug38546RemapBooleanToIntForPDOMySQL($record, $types)
+    private function phpBug38546RemapBooleanToIntForPDOMySQL(array $record, array $types): array
     {
         if ($this->connection->getDriver() instanceof PDOMySQLDriver) {
             return [$record, $types];

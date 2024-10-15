@@ -12,7 +12,7 @@ interface FixtureLoadableInterface
      * @param string $table
      * @param FixtureInterface $fixtureSource
      * @param int|null $baseIndex
-     * @return array
+     * @return list<int|string>
      */
-    public function load($table, FixtureInterface $fixtureSource, $baseIndex = null);
+    public function load(string $table, FixtureInterface $fixtureSource, ?int $baseIndex = null): array;
 }

@@ -6,7 +6,7 @@ class RandomText extends AbstractRandomValue
     /**
      * @inheritdoc
      */
-    public function getAt($index)
+    public function getAt(int $index): string
     {
         return $this->randomValueGenerator->paragraph();
     }

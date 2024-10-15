@@ -26,26 +26,26 @@ use Lapaz\QuickBrownFox\Generator\GeneratorRepository;
 class FixtureManager implements RepositoryAggregateInterface
 {
     /**
-     * @var FixtureRepository[]
+     * @var array<string,FixtureRepository>
      */
-    protected $fixtureRepositories;
+    protected array $fixtureRepositories;
 
     /**
-     * @var GeneratorRepository[]
+     * @var array<string,GeneratorRepository>
      */
-    protected $generatorRepositories;
+    protected array $generatorRepositories;
 
     /**
      * @var RandomValueGenerator
      */
-    protected $randomValueGenerator;
+    protected RandomValueGenerator $randomValueGenerator;
 
     /**
      * Creates initialized FixtureManager.
      *
      * @param string $locale Locale of randomly generated text e.g. 'ja_JP'
      */
-    public function __construct($locale = RandomValueFactory::DEFAULT_LOCALE)
+    public function __construct(string $locale = RandomValueFactory::DEFAULT_LOCALE)
     {
         $this->randomValueGenerator = RandomValueFactory::create($locale);
 
@@ -56,7 +56,7 @@ class FixtureManager implements RepositoryAggregateInterface
     /**
      * @inheritdoc
      */
-    public function getFixtureRepositoryFor($table)
+    public function getFixtureRepositoryFor(string $table): FixtureRepository
     {
         if (!isset($this->fixtureRepositories[$table])) {
             $this->fixtureRepositories[$table] = new FixtureRepository(
@@ -69,7 +69,7 @@ class FixtureManager implements RepositoryAggregateInterface
     /**
      * @inheritdoc
      */
-    public function getGeneratorRepositoryFor($table)
+    public function getGeneratorRepositoryFor(string $table): GeneratorRepository
     {
         if (!isset($this->generatorRepositories[$table])) {
             $this->generatorRepositories[$table] = new GeneratorRepository();
@@ -80,7 +80,7 @@ class FixtureManager implements RepositoryAggregateInterface
     /**
      * @inheritdoc
      */
-    public function getRandomValueGenerator()
+    public function getRandomValueGenerator(): RandomValueGenerator
     {
         return $this->randomValueGenerator;
     }
@@ -90,9 +90,9 @@ class FixtureManager implements RepositoryAggregateInterface
      * TableDefinition instance.
      *
      * @param string $table Table name
-     * @param callable $callable Definition procedure callback
+     * @param callable(TableDefinition):void $callable Definition procedure callback
      */
-    public function table($table, $callable)
+    public function table(string $table, callable $callable): void
     {
         $context = new TableDefinition(
             $this->getFixtureRepositoryFor($table),
@@ -107,7 +107,7 @@ class FixtureManager implements RepositoryAggregateInterface
      * @param Connection|array $connection DBAL connection
      * @return SessionManager Session manager
      */
-    public function createSessionManager($connection)
+    public function createSessionManager(Connection|array $connection): SessionManager
     {
         // PDO connection is no longer supported.
         // https://github.com/doctrine/dbal/blob/3.0.0/UPGRADE.md#bc-break-user-provided-pdo-instance-is-no-longer-supported

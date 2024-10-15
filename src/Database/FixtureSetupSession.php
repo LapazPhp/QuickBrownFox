@@ -1,6 +1,7 @@
 <?php
 namespace Lapaz\QuickBrownFox\Database;
 
+use Doctrine\DBAL\Exception as DBALException;
 use Lapaz\QuickBrownFox\Context\FixtureLoadableInterface;
 use Lapaz\QuickBrownFox\Context\TableLoading;
 use Lapaz\QuickBrownFox\Exception\UnexpectedStateException;
@@ -9,29 +10,14 @@ use Lapaz\QuickBrownFox\Fixture\FixtureInterface;
 class FixtureSetupSession implements FixtureLoadableInterface
 {
     /**
-     * @var RepositoryAggregateInterface
+     * @var array<string, bool>
      */
-    protected $repositoryAggregate;
-
-    /**
-     * @var Loader
-     */
-    protected $loader;
-
-    /**
-     * @var TablePrototypeGeneratorBuilder
-     */
-    private $prototypeBuilder;
-
-    /**
-     * @var string
-     */
-    protected $reloadedTables;
+    protected array $reloadedTables;
 
     /**
      * @var bool
      */
-    protected $terminated;
+    protected bool $terminated;
 
     /**
      * @param RepositoryAggregateInterface $repositoryAggregate
@@ -39,15 +25,11 @@ class FixtureSetupSession implements FixtureLoadableInterface
      * @param TablePrototypeGeneratorBuilder $prototypeBuilder
      */
     public function __construct(
-        RepositoryAggregateInterface $repositoryAggregate,
-        Loader $loader,
-        TablePrototypeGeneratorBuilder $prototypeBuilder
+        protected RepositoryAggregateInterface $repositoryAggregate,
+        protected Loader $loader,
+        protected TablePrototypeGeneratorBuilder $prototypeBuilder
     )
     {
-        $this->repositoryAggregate = $repositoryAggregate;
-        $this->loader = $loader;
-        $this->prototypeBuilder = $prototypeBuilder;
-
         $this->reloadedTables = [];
         $this->terminated = false;
     }
@@ -56,7 +38,7 @@ class FixtureSetupSession implements FixtureLoadableInterface
      * @param string $table
      * @return TableLoading
      */
-    public function into($table)
+    public function into(string $table): TableLoading
     {
         return new TableLoading(
             $this,
@@ -68,8 +50,9 @@ class FixtureSetupSession implements FixtureLoadableInterface
 
     /**
      * @param string $table
+     * @throws DBALException
      */
-    public function reset($table)
+    public function reset(string $table): void
     {
         $this->loader->resetCascading($table);
         $this->reloadedTables[$table] = true;
@@ -79,9 +62,10 @@ class FixtureSetupSession implements FixtureLoadableInterface
      * @param string $table
      * @param FixtureInterface $fixtureSource
      * @param int|null $baseIndex
-     * @return array
+     * @return list<int|string>
+     * @throws DBALException
      */
-    public function load($table, FixtureInterface $fixtureSource, $baseIndex = null)
+    public function load(string $table, FixtureInterface $fixtureSource, ?int $baseIndex = null): array
     {
         if ($this->terminated) {
             throw new UnexpectedStateException("Session already terminated");
@@ -103,7 +87,7 @@ class FixtureSetupSession implements FixtureLoadableInterface
     /**
      *
      */
-    public function terminate()
+    public function terminate(): void
     {
         $this->terminated = true;
     }

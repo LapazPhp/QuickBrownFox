@@ -8,24 +8,19 @@ use Lapaz\QuickBrownFox\Generator\ValueSetGenerator;
 class FixedArrayFixture implements FixtureInterface
 {
     /**
-     * @var array
+     * @param list<array<string,mixed>> $records
      */
-    protected $records;
-
-    /**
-     * @param array $records
-     */
-    public function __construct(array $records)
-    {
-        $this->records = $records;
+    public function __construct(
+        protected array $records
+    ) {
     }
 
     /**
      * @param GeneratorInterface $prototype
-     * @param int $baseIndex
-     * @return array
+     * @param int|null $baseIndex
+     * @return list<array<string,mixed>>
      */
-    public function generateRecords(GeneratorInterface $prototype, $baseIndex = null)
+    public function generateRecords(GeneratorInterface $prototype, ?int $baseIndex = null): array
     {
         if ($baseIndex === null) {
             $baseIndex = 0;

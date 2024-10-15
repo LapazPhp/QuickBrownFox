@@ -4,30 +4,21 @@ namespace Lapaz\QuickBrownFox\Value;
 class ForeignKeyReferencedValue implements ValueProviderInterface
 {
     /**
-     * @var ValueProviderInterface
-     */
-    protected $foreignValuesProvider;
-
-    /**
-     * @var string
-     */
-    protected $foreignColumn;
-
-    /**
      * @param ValueProviderInterface $foreignValuesProvider
      * @param string $foreignColumn
      */
-    public function __construct(ValueProviderInterface $foreignValuesProvider, $foreignColumn)
+    public function __construct(
+        protected ValueProviderInterface $foreignValuesProvider,
+        protected string $foreignColumn
+    )
     {
-        $this->foreignValuesProvider = $foreignValuesProvider;
-        $this->foreignColumn = $foreignColumn;
     }
 
     /**
      * @param int $index
      * @return mixed
      */
-    public function getAt($index)
+    public function getAt(int $index): mixed
     {
         $record = $this->foreignValuesProvider->getAt($index);
         return $record[$this->foreignColumn];

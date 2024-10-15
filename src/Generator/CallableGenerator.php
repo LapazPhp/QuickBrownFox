@@ -20,9 +20,9 @@ class CallableGenerator implements GeneratorInterface
 
     /**
      * @param int $index
-     * @return ValueProviderInterface[]
+     * @return list<ValueProviderInterface>
      */
-    public function extractAt($index)
+    public function extractAt(int $index): array
     {
         // ugly...
         $values = $this->generateAt($index);
@@ -31,9 +31,9 @@ class CallableGenerator implements GeneratorInterface
 
     /**
      * @param int $index
-     * @return array
+     * @return array<string, mixed>
      */
-    public function generateAt($index)
+    public function generateAt(int $index): array
     {
         return call_user_func($this->callable, $index);
     }

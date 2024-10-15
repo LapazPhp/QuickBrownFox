@@ -2,11 +2,12 @@
 namespace Lapaz\QuickBrownFox\Exception;
 
 use Doctrine\DBAL\Exception;
+use RuntimeException;
 
 /**
  * Database exception, actually uncheck version wrapper of DBALException.
  */
-class DatabaseException extends \RuntimeException implements QuickBrownFoxException
+class DatabaseException extends RuntimeException implements QuickBrownFoxException
 {
     /**
      * Creates DatabaseException from DBALException.

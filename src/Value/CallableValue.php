@@ -19,7 +19,7 @@ class CallableValue implements ValueProviderInterface
     /**
      * @inheritdoc
      */
-    public function getAt($index)
+    public function getAt(int $index): mixed
     {
         return call_user_func($this->callable, $index);
     }

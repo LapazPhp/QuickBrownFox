@@ -6,36 +6,29 @@ use Doctrine\DBAL\Connection;
 class SessionManager
 {
     /**
-     * @var RepositoryAggregateInterface
-     */
-    protected $repositoryAggregate;
-
-    /**
      * @var Loader
      */
-    protected $loader;
+    protected Loader $loader;
 
     /**
      * @var TablePrototypeGeneratorBuilder
      */
-    private $prototypeBuilder;
+    private TablePrototypeGeneratorBuilder $prototypeBuilder;
 
     /**
-     * @var FixtureSetupSession
+     * @var FixtureSetupSession|null
      */
-    protected $currentSession;
+    protected ?FixtureSetupSession $currentSession;
 
     /**
      * @param RepositoryAggregateInterface $repositoryAggregate
      * @param Connection $connection
      */
     public function __construct(
-        RepositoryAggregateInterface $repositoryAggregate,
+        protected RepositoryAggregateInterface $repositoryAggregate,
         Connection $connection
     )
     {
-        $this->repositoryAggregate = $repositoryAggregate;
-
         $this->prototypeBuilder = new TablePrototypeGeneratorBuilder(
             $connection,
             $repositoryAggregate
@@ -49,11 +42,10 @@ class SessionManager
     /**
      * @return FixtureSetupSession
      */
-    public function newSession()
+    public function newSession(): FixtureSetupSession
     {
-        if ($this->currentSession) {
-            $this->currentSession->terminate();
-        }
+        $this->currentSession?->terminate();
+
         $this->currentSession = new FixtureSetupSession(
             $this->repositoryAggregate,
             $this->loader,

@@ -6,23 +6,18 @@ use Lapaz\QuickBrownFox\Value\ValueProviderInterface;
 class GeneratorComposite implements GeneratorInterface
 {
     /**
-     * @var GeneratorInterface[]
+     * @param list<GeneratorInterface> $generators
      */
-    protected $generators;
-
-    /**
-     * @param GeneratorInterface[] $generators
-     */
-    public function __construct($generators)
-    {
-        $this->generators = $generators;
+    public function __construct(
+        protected array $generators
+    ) {
     }
 
     /**
      * @param int $index
-     * @return ValueProviderInterface[]
+     * @return list<ValueProviderInterface>
      */
-    public function extractAt($index)
+    public function extractAt(int $index): array
     {
         $valueProviders = [];
         foreach ($this->generators as $generator) {
@@ -33,9 +28,9 @@ class GeneratorComposite implements GeneratorInterface
 
     /**
      * @param int $index
-     * @return array
+     * @return array<string,mixed>
      */
-    public function generateAt($index)
+    public function generateAt(int $index): array
     {
         $record = [];
         foreach ($this->generators as $generator) {

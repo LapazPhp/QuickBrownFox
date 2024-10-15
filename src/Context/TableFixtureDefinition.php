@@ -9,24 +9,16 @@ class TableFixtureDefinition
     use WithContextTrait;
 
     /**
-     * @var string
-     */
-    protected $name;
-
-    /**
-     * @var FixtureRepository
-     */
-    protected $fixtureRepository;
-
-    /**
      * @param string $name
      * @param FixtureRepository $fixtureRepository
      * @param GeneratorRepository $generatorRepository
      */
-    public function __construct($name, FixtureRepository $fixtureRepository, GeneratorRepository $generatorRepository)
+    public function __construct(
+        protected string $name,
+        protected FixtureRepository $fixtureRepository,
+        GeneratorRepository $generatorRepository
+    )
     {
-        $this->name = $name;
-        $this->fixtureRepository = $fixtureRepository;
         $this->generatorRepository = $generatorRepository;
         $this->generators = [];
     }
@@ -34,17 +26,21 @@ class TableFixtureDefinition
     /**
      * @param array $records
      */
-    public function define($records)
+    public function define(array $records): void
     {
         $this->fixtureRepository->define($this->name, $records, $this->generators);
     }
 
     /**
-     * @param string|array|callable $generator
+     * @param callable|array|string $generator
      * @param int $repeatAmount
      * @param int $baseIndex
      */
-    public function defineGenerated($generator, $repeatAmount, $baseIndex = 0)
+    public function defineGenerated(
+        callable|array|string $generator,
+        int $repeatAmount,
+        int $baseIndex = 0
+    ): void
     {
         $this->fixtureRepository->defineGenerated($this->name, $generator, $repeatAmount, $baseIndex, $this->generators);
     }

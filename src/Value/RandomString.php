@@ -9,7 +9,7 @@ class RandomString extends AbstractRandomValue
     /**
      * @inheritdoc
      */
-    public function getAt($index)
+    public function getAt(int $index): string
     {
         $length = $this->column->getLength();
 

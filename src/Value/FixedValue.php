@@ -4,22 +4,18 @@ namespace Lapaz\QuickBrownFox\Value;
 class FixedValue implements ValueProviderInterface
 {
     /**
-     * @var mixed
-     */
-    protected $value;
-
-    /**
      * @param mixed $value
      */
-    public function __construct($value)
+    public function __construct(
+        protected mixed $value
+    )
     {
-        $this->value = $value;
     }
 
     /**
      * @inheritdoc
      */
-    public function getAt($index)
+    public function getAt(int $index): mixed
     {
         return $this->value;
     }

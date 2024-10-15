@@ -7,31 +7,22 @@ use Lapaz\QuickBrownFox\Generator\GeneratorInterface;
 class GeneratorSupportedFixture implements FixtureInterface
 {
     /**
-     * @var FixtureInterface
-     */
-    protected $baseFixture;
-
-    /**
-     * @var GeneratorInterface
-     */
-    protected $generator;
-
-    /**
      * @param FixtureInterface $baseFixture
      * @param GeneratorInterface $generator
      */
-    public function __construct(FixtureInterface $baseFixture, GeneratorInterface $generator)
+    public function __construct(
+        protected FixtureInterface $baseFixture,
+        protected GeneratorInterface $generator
+    )
     {
-        $this->baseFixture = $baseFixture;
-        $this->generator = $generator;
     }
 
     /**
      * @param GeneratorInterface $prototype
      * @param int|null $baseIndex
-     * @return array
+     * @return list<array<string,mixed>>
      */
-    public function generateRecords(GeneratorInterface $prototype, $baseIndex = null)
+    public function generateRecords(GeneratorInterface $prototype, ?int $baseIndex = null): array
     {
         $generator = new GeneratorComposite([$prototype, $this->generator]);
         return $this->baseFixture->generateRecords($generator, $baseIndex);

@@ -11,7 +11,7 @@ interface FixtureInterface
     /**
      * @param GeneratorInterface $prototype
      * @param int|null $baseIndex
-     * @return array
+     * @return list<array<string,mixed>>
      */
-    public function generateRecords(GeneratorInterface $prototype, $baseIndex = null);
+    public function generateRecords(GeneratorInterface $prototype, ?int $baseIndex = null): array;
 }

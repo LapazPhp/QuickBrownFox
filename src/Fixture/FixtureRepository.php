@@ -10,26 +10,22 @@ use Lapaz\QuickBrownFox\Generator\GeneratorRepository;
 class FixtureRepository
 {
     /**
-     * @var GeneratorRepository
+     * @var array<string, FixtureInterface>
      */
-    protected $generatorRepository;
-
-    /**
-     * @var FixtureInterface[]
-     */
-    protected $items;
+    protected array $items;
 
     /**
      * @var bool
      */
-    protected $locked;
+    protected bool $locked;
 
     /**
      * @param GeneratorRepository $generatorRepository
      */
-    public function __construct(GeneratorRepository $generatorRepository)
+    public function __construct(
+        protected GeneratorRepository $generatorRepository
+    )
     {
-        $this->generatorRepository = $generatorRepository;
         $this->items = [];
         $this->locked = false;
     }
@@ -38,7 +34,7 @@ class FixtureRepository
      * @param string $name
      * @return bool
      */
-    public function has($name)
+    public function has(string $name): bool
     {
         return isset($this->items[$name]);
     }
@@ -47,7 +43,7 @@ class FixtureRepository
      * @param string $name
      * @return FixtureInterface
      */
-    public function get($name)
+    public function get(string $name): FixtureInterface
     {
         if (!$this->has($name)) {
             throw new InvalidArgumentException("No such definition: " . $name);
@@ -62,7 +58,7 @@ class FixtureRepository
      * @param string $name
      * @param FixtureInterface $generator
      */
-    public function set($name, FixtureInterface $generator)
+    public function set(string $name, FixtureInterface $generator): void
     {
         if ($this->locked) {
             throw new UnexpectedStateException("Modification not allowed");
@@ -76,11 +72,11 @@ class FixtureRepository
     }
 
     /**
-     * @param array $records
-     * @param GeneratorInterface[]|string[] $defaultValueGenerators
+     * @param list<array<string,mixed>> $records
+     * @param list<GeneratorInterface|string> $defaultValueGenerators
      * @return FixedArrayFixture
      */
-    public function newFixture($records, $defaultValueGenerators = [])
+    public function newFixture(array $records, array $defaultValueGenerators = []): FixedArrayFixture
     {
         $fixtureSource = new FixedArrayFixture($records);
 
@@ -92,13 +88,18 @@ class FixtureRepository
     }
 
     /**
-     * @param GeneratorInterface|string|array|callable $generator
+     * @param callable|array|string|GeneratorInterface $generator
      * @param int $repeatAmount
      * @param int $baseIndex
      * @param GeneratorInterface[]|string[] $defaultValueGenerators
      * @return GeneratedRecordFixture
      */
-    public function newGeneratedFixture($generator, $repeatAmount, $baseIndex, $defaultValueGenerators = [])
+    public function newGeneratedFixture(
+        callable|array|string|GeneratorInterface $generator,
+        int $repeatAmount,
+        int $baseIndex,
+        array $defaultValueGenerators = []
+    ): GeneratedRecordFixture
     {
         $fixtureSource = new GeneratedRecordFixture(
             $this->normalizeGenerator($generator),
@@ -115,10 +116,10 @@ class FixtureRepository
 
     /**
      * @param FixtureInterface $fixtureSource
-     * @param GeneratorInterface[]|string[] $generators
+     * @param list<GeneratorInterface|string> $generators
      * @return GeneratorSupportedFixture
      */
-    public function newGeneratorFollowedFixture($fixtureSource, $generators)
+    public function newGeneratorFollowedFixture(FixtureInterface $fixtureSource, array $generators): GeneratorSupportedFixture
     {
         $generators = array_map([$this, 'normalizeGenerator'], $generators);
         return new GeneratorSupportedFixture(
@@ -129,22 +130,32 @@ class FixtureRepository
 
     /**
      * @param string $name
-     * @param array $records
-     * @param GeneratorInterface[]|string[] $defaultValueGenerators
+     * @param list<array<string,mixed>> $records
+     * @param list<GeneratorInterface|string> $defaultValueGenerators
      */
-    public function define($name, $records, $defaultValueGenerators = [])
+    public function define(
+        string $name,
+        array $records,
+        array $defaultValueGenerators = []
+    ): void
     {
         $this->set($name, $this->newFixture($records, $defaultValueGenerators));
     }
 
     /**
      * @param string $name
-     * @param GeneratorInterface|string|array|callable $generator
+     * @param callable|array|string|GeneratorInterface $generator
      * @param int $repeatAmount
      * @param int $baseIndex
-     * @param GeneratorInterface[]|string[] $defaultValueGenerators
+     * @param list<GeneratorInterface|string> $defaultValueGenerators
      */
-    public function defineGenerated($name, $generator, $repeatAmount, $baseIndex = 0, $defaultValueGenerators = [])
+    public function defineGenerated(
+        string $name,
+        callable|array|string|GeneratorInterface $generator,
+        int $repeatAmount,
+        int $baseIndex = 0,
+        array $defaultValueGenerators = []
+    ): void
     {
         $this->set($name, $this->newGeneratedFixture($generator, $repeatAmount, $baseIndex, $defaultValueGenerators));
     }
@@ -152,10 +163,10 @@ class FixtureRepository
     // defineGeneratorFollowed ?
 
     /**
-     * @param GeneratorInterface|string|array|callable $generator
+     * @param callable|array|string|GeneratorInterface $generator
      * @return GeneratorInterface
      */
-    protected function normalizeGenerator($generator)
+    protected function normalizeGenerator(callable|array|string|GeneratorInterface $generator): GeneratorInterface
     {
         return $this->generatorRepository->normalizeGenerator($generator);
     }

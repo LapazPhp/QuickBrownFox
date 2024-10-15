@@ -6,18 +6,13 @@ use Doctrine\DBAL\Exception as DBALException;
 use Doctrine\DBAL\DriverManager;
 use Lapaz\QuickBrownFox\Context\TableDefinition;
 use PHPUnit\Framework\TestCase;
+use RuntimeException;
 
 class FixtureManagerTest extends TestCase
 {
-    /**
-     * @var Connection
-     */
-    protected $connection;
+    private Connection $connection;
 
-    /**
-     * @var FixtureManager
-     */
-    protected $manager;
+    private FixtureManager $manager;
 
     /**
      * @throws DBALException
@@ -293,7 +288,7 @@ class FixtureManagerTest extends TestCase
     /**
      * @return Database\FixtureSetupSession
      */
-    protected function newSession()
+    protected function newSession(): Database\FixtureSetupSession
     {
         return $this->manager->createSessionManager($this->connection)->newSession();
     }
@@ -310,7 +305,7 @@ class FixtureManagerTest extends TestCase
             ]);
             $this->setUpSchema();
         } catch (DBALException $e) {
-            throw new \RuntimeException($e->getMessage(), $e->getCode(), $e);
+            throw new RuntimeException($e->getMessage(), $e->getCode(), $e);
         }
 
         $this->manager = new FixtureManager();
@@ -321,7 +316,7 @@ class FixtureManagerTest extends TestCase
     /**
      * @throws DBALException
      */
-    protected function setUpSchema()
+    protected function setUpSchema(): void
     {
         $this->connection->executeStatement("PRAGMA foreign_keys=ON;");
 

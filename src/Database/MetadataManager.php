@@ -2,32 +2,31 @@
 namespace Lapaz\QuickBrownFox\Database;
 
 use Doctrine\DBAL\Connection;
+use Doctrine\DBAL\Exception as DBALException;
 use Doctrine\DBAL\Schema\AbstractSchemaManager;
 use Doctrine\DBAL\Types\Type;
 
 class MetadataManager
 {
     /**
-     * @var Connection
+     * @var array<string,array<string,Type>>
      */
-    protected $connection;
+    protected array $tableColumnTypeMap;
 
     /**
-     * @var Type[][]
+     * @var array<string,list<string>>|null
      */
-    protected $tableColumnTypeMap;
+    protected ?array $referencingTablesMap;
+
     /**
-     * @var string[][]
+     * @var array<string,list<string>>|null
      */
-    protected $referencingTablesMap;
+    protected ?array $invertReferencingTablesMap;
+
     /**
-     * @var string[][]
+     * @var array<string,list<string>>
      */
-    protected $invertReferencingTablesMap;
-    /**
-     * @var string[][]
-     */
-    protected $nullableForeignKeysMap;
+    protected array $nullableForeignKeysMap;
 
     private ?AbstractSchemaManager $schemaManager = null;
 
@@ -35,9 +34,10 @@ class MetadataManager
      * MetadataManager constructor.
      * @param Connection $connection
      */
-    public function __construct(Connection $connection)
+    public function __construct(
+        protected Connection $connection
+    )
     {
-        $this->connection = $connection;
         $this->tableColumnTypeMap = [];
         $this->referencingTablesMap = null;
         $this->invertReferencingTablesMap = null;
@@ -46,34 +46,29 @@ class MetadataManager
 
     /**
      * @param string $targetTable
-     * @return string[]
+     * @return list<string>
+     * @throws DBALException
      */
-    public function getReferencingTables($targetTable)
+    public function getReferencingTables(string $targetTable): array
     {
         $this->analyzeForeignTableConstraint();
-
-        if (isset($this->referencingTablesMap[$targetTable])) {
-            return $this->referencingTablesMap[$targetTable];
-        } else {
-            return [];
-        }
+        return $this->referencingTablesMap[$targetTable] ?? [];
     }
 
     /**
      * @param string $targetTable
-     * @return string[]
+     * @return list<string>
+     * @throws DBALException
      */
-    public function getInvertReferencingTables($targetTable)
+    public function getInvertReferencingTables(string $targetTable): array
     {
         $this->analyzeForeignTableConstraint();
-
-        if (isset($this->invertReferencingTablesMap[$targetTable])) {
-            return $this->invertReferencingTablesMap[$targetTable];
-        } else {
-            return [];
-        }
+        return $this->invertReferencingTablesMap[$targetTable] ?? [];
     }
 
+    /**
+     * @throws DBALException
+     */
     private function getSchemaManager(): AbstractSchemaManager
     {
         if ($this->schemaManager === null) {
@@ -82,7 +77,10 @@ class MetadataManager
         return $this->schemaManager;
     }
 
-    private function analyzeForeignTableConstraint()
+    /**
+     * @throws DBALException
+     */
+    private function analyzeForeignTableConstraint(): void
     {
         if ($this->referencingTablesMap !== null && $this->invertReferencingTablesMap !== null) {
             return;
@@ -122,9 +120,10 @@ class MetadataManager
 
     /**
      * @param string $targetTable
-     * @return string[]
+     * @return list<string>
+     * @throws DBALException
      */
-    public function getNullableForeignKeys($targetTable)
+    public function getNullableForeignKeys(string $targetTable): array
     {
         if (isset($this->nullableForeignKeysMap[$targetTable])) {
             return $this->nullableForeignKeysMap[$targetTable];
@@ -148,7 +147,10 @@ class MetadataManager
         return $this->nullableForeignKeysMap[$targetTable];
     }
 
-    private function isNullableColumnsAll(array $columnNames, $table)
+    /**
+     * @throws DBALException
+     */
+    private function isNullableColumnsAll(array $columnNames, $table): bool
     {
         $schemaManager = $this->getSchemaManager();
         $columns = $schemaManager->listTableColumns($table);
@@ -163,9 +165,10 @@ class MetadataManager
 
     /**
      * @param string $table
-     * @return Type[]
+     * @return array<string,Type>
+     * @throws DBALException
      */
-    public function getColumnTypes($table)
+    public function getColumnTypes(string $table): array
     {
         if (!isset($this->tableColumnTypeMap[$table])) {
             $schemaManager = $this->getSchemaManager();

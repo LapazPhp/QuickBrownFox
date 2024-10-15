@@ -10,43 +10,28 @@ class ForeignTableFetcher implements ValueProviderInterface
     const FOREIGN_REFERENCE_LIMIT = 10;
 
     /**
-     * @var string
+     * @var array|null
      */
-    protected $table;
-
-    /**
-     * @var array key=local-column, value=foreign-column
-     */
-    protected $mapping;
-
-    /**
-     * @var array
-     */
-    protected $foreignRecords;
-
-    /**
-     * @var TablePrototypeGeneratorBuilder
-     */
-    protected $prototypeBuilder;
+    protected ?array $foreignRecords;
 
     /**
      * @param string $table
-     * @param array $mapping
+     * @param array<string,mixed> $mapping key=local-column, value=foreign-column
      * @param TablePrototypeGeneratorBuilder $prototypeBuilder
      */
-    public function __construct($table, $mapping, TablePrototypeGeneratorBuilder $prototypeBuilder)
+    public function __construct(
+        protected string $table,
+        protected array $mapping,
+        protected TablePrototypeGeneratorBuilder $prototypeBuilder
+    )
     {
-        $this->table = $table;
-        $this->mapping = $mapping;
-        $this->prototypeBuilder = $prototypeBuilder;
-
         $this->foreignRecords = null;
     }
 
     /**
-     * @return ForeignKeyReferencedValue[]
+     * @return array<string,ForeignKeyReferencedValue>
      */
-    public function createValueProviders()
+    public function createValueProviders(): array
     {
         $valueProviders = [];
         foreach ($this->mapping as $local => $foreignColumn) {
@@ -57,10 +42,10 @@ class ForeignTableFetcher implements ValueProviderInterface
 
     /**
      * @param int $index
-     * @return array
+     * @return mixed
      * @throws DBALException
      */
-    public function getAt($index)
+    public function getAt(int $index): mixed
     {
         $this->ensureForeignRecords(static::FOREIGN_REFERENCE_LIMIT);
         return $this->foreignRecords[$index % count($this->foreignRecords)];
@@ -69,8 +54,9 @@ class ForeignTableFetcher implements ValueProviderInterface
     /**
      * @param int $maxAmount
      * @throws DBALException
+     * @noinspection PhpSameParameterValueInspection
      */
-    private function ensureForeignRecords($maxAmount)
+    private function ensureForeignRecords(int $maxAmount): void
     {
         if (!empty($this->foreignRecords)) {
             return;
@@ -84,7 +70,7 @@ class ForeignTableFetcher implements ValueProviderInterface
 
         $table = $connection->quoteIdentifier($this->table);
 
-        $this->foreignRecords = $connection->fetchAllAssociative("SELECT {$fields} FROM {$table} LIMIT {$maxAmount}");
+        $this->foreignRecords = $connection->fetchAllAssociative("SELECT $fields FROM $table LIMIT $maxAmount");
 
         if (!empty($this->foreignRecords)) {
             return;
@@ -96,6 +82,6 @@ class ForeignTableFetcher implements ValueProviderInterface
         $loader = new Loader($connection);
         $loader->load($this->table, [$record]);
 
-        $this->foreignRecords = $connection->fetchAllAssociative("SELECT {$fields} FROM {$table} LIMIT {$maxAmount}");
+        $this->foreignRecords = $connection->fetchAllAssociative("SELECT $fields FROM $table LIMIT $maxAmount");
     }
 }

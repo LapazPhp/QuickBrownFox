@@ -9,18 +9,18 @@ trait WithContextTrait
     /**
      * @var GeneratorRepository
      */
-    protected $generatorRepository;
+    protected GeneratorRepository $generatorRepository;
 
     /**
      * @var GeneratorInterface[]
      */
-    protected $generators;
+    protected array $generators;
 
     /**
-     * @param mixed[]|mixed $definitions
+     * @param mixed $definitions
      * @return static
      */
-    public function with($definitions)
+    public function with(mixed $definitions): static
     {
         // Normalize definitions to array even if single definition.
         $d = $definitions;

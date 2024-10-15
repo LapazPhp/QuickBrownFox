@@ -6,7 +6,7 @@ class RandomDecimal extends AbstractRandomValue
     /**
      * @inheritdoc
      */
-    public function getAt($index)
+    public function getAt(int $index): float
     {
         $precision = $this->column->getPrecision();
         $scale = $this->column->getScale();

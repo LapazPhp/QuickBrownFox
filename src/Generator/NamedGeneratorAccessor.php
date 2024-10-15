@@ -6,39 +6,30 @@ use Lapaz\QuickBrownFox\Value\ValueProviderInterface;
 class NamedGeneratorAccessor implements GeneratorInterface
 {
     /**
-     * @var GeneratorRepository
-     */
-    protected $repository;
-
-    /**
-     * @var string
-     */
-    protected $name;
-
-    /**
      * @param GeneratorRepository $repository
      * @param string $name
      */
-    public function __construct(GeneratorRepository $repository, $name)
+    public function __construct(
+        protected GeneratorRepository $repository,
+        protected string $name
+    )
     {
-        $this->repository = $repository;
-        $this->name = $name;
     }
 
     /**
      * @param int $index
-     * @return ValueProviderInterface[]
+     * @return list<ValueProviderInterface>
      */
-    public function extractAt($index)
+    public function extractAt(int $index): array
     {
         return $this->repository->get($this->name)->extractAt($index);
     }
 
     /**
      * @param int $index
-     * @return array
+     * @return array<string, mixed>
      */
-    public function generateAt($index)
+    public function generateAt(int $index): array
     {
         return $this->repository->get($this->name)->generateAt($index);
     }

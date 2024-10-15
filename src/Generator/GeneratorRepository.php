@@ -7,19 +7,19 @@ use Lapaz\QuickBrownFox\Exception\UnexpectedStateException;
 class GeneratorRepository
 {
     /**
-     * @var GeneratorInterface
+     * @var GeneratorInterface|null
      */
-    protected $tableDefaults;
+    protected ?GeneratorInterface $tableDefaults;
 
     /**
      * @var GeneratorInterface[]
      */
-    protected $items;
+    protected array $items;
 
     /**
      * @var bool
      */
-    protected $locked;
+    protected bool $locked;
 
     /**
      *
@@ -35,7 +35,7 @@ class GeneratorRepository
      * @param string $name
      * @return bool
      */
-    public function has($name)
+    public function has(string $name): bool
     {
         return isset($this->items[$name]);
     }
@@ -44,7 +44,7 @@ class GeneratorRepository
      * @param string $name
      * @return GeneratorInterface
      */
-    public function get($name)
+    public function get(string $name): GeneratorInterface
     {
         if (!$this->has($name)) {
             throw new InvalidArgumentException("No such definition: " . $name);
@@ -59,7 +59,7 @@ class GeneratorRepository
      * @param string $name
      * @param GeneratorInterface $generator
      */
-    public function set($name, GeneratorInterface $generator)
+    public function set(string $name, GeneratorInterface $generator): void
     {
         if ($this->locked) {
             throw new UnexpectedStateException("Modification not allowed");
@@ -76,7 +76,7 @@ class GeneratorRepository
     /**
      * @return GeneratorInterface|null
      */
-    public function getTableDefaults()
+    public function getTableDefaults(): ?GeneratorInterface
     {
         $this->locked = true;
 
@@ -86,7 +86,7 @@ class GeneratorRepository
     /**
      * @param GeneratorInterface|null $generator
      */
-    public function setTableDefaults($generator)
+    public function setTableDefaults(?GeneratorInterface $generator): void
     {
         if ($this->locked) {
             throw new UnexpectedStateException("Modification not allowed");
@@ -100,10 +100,10 @@ class GeneratorRepository
     }
 
     /**
-     * @param array|callable $definition
+     * @param callable|array $definition
      * @return GeneratorInterface
      */
-    public function newGenerator($definition)
+    public function newGenerator(callable|array $definition): GeneratorInterface
     {
         if (is_callable($definition)) {
             $generator = new CallableGenerator($definition);
@@ -116,10 +116,10 @@ class GeneratorRepository
     }
 
     /**
-     * @param GeneratorInterface[]|string[]|array[]|callable[] $generators
-     * @return GeneratorComposite
+     * @param list<callable|array|string|GeneratorInterface> $generators
+     * @return GeneratorInterface
      */
-    public function newGeneratorComposite(array $generators)
+    public function newGeneratorComposite(array $generators): GeneratorInterface
     {
         $normalizedGenerators = [];
         foreach ($generators as $generator) {
@@ -135,26 +135,26 @@ class GeneratorRepository
 
     /**
      * @param string $name
-     * @param GeneratorInterface[]|string[]|array[]|callable[] $generators
+     * @param list<callable|array|string|GeneratorInterface> $generators
      */
-    public function defineComposite($name, array $generators)
+    public function defineComposite(string $name, array $generators): void
     {
         $this->set($name, $this->newGeneratorComposite($generators));
     }
 
     /**
-     * @param GeneratorInterface[]|string[]|array[]|callable[] $generators
+     * @param list<callable|array|string|GeneratorInterface> $generators
      */
-    public function defineTableDefaults($generators)
+    public function defineTableDefaults(array $generators): void
     {
         $this->setTableDefaults($this->newGeneratorComposite($generators));
     }
 
     /**
-     * @param GeneratorInterface|string|array|callable $generator
+     * @param callable|array|string|GeneratorInterface $generator
      * @return GeneratorInterface
      */
-    public function normalizeGenerator($generator)
+    public function normalizeGenerator(callable|array|string|GeneratorInterface $generator): GeneratorInterface
     {
         if (is_array($generator) || is_callable($generator)) {
             $generator = $this->newGenerator($generator);

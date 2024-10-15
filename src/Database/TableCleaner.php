@@ -9,34 +9,27 @@ use Lapaz\QuickBrownFox\Exception\DatabaseException;
 class TableCleaner
 {
     /**
-     * @var Connection
+     * @var array<string,bool>
      */
-    protected $connection;
-
-    /**
-     * @var MetadataManager
-     */
-    protected $metadataManager;
-
-    /**
-     * @var bool[]
-     */
-    private $finishedTables;
+    private array $finishedTables;
 
     /**
      * @param Connection $connection
+     * @param MetadataManager $metadataManager
      */
-    public function __construct(Connection $connection, MetadataManager $metadataManager)
+    public function __construct(
+        protected Connection $connection,
+        protected MetadataManager $metadataManager
+    )
     {
-        $this->connection = $connection;
-        $this->metadataManager = $metadataManager;
         $this->finishedTables = [];
     }
 
     /**
      * @param string $table
+     * @throws DBALException
      */
-    public function clean($table)
+    public function clean(string $table): void
     {
         $invertReferencingTables = $this->metadataManager->getInvertReferencingTables($table);
 

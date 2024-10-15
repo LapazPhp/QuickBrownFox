@@ -13,7 +13,7 @@ interface RepositoryAggregateInterface
      * @param string $table Table name
      * @return FixtureRepository Table assigned repository of fixture data.
      */
-    public function getFixtureRepositoryFor($table);
+    public function getFixtureRepositoryFor(string $table): FixtureRepository;
 
     /**
      * Returns generator repository for specified table.
@@ -21,12 +21,12 @@ interface RepositoryAggregateInterface
      * @param string $table Table name
      * @return GeneratorRepository Table assigned repository of data generators.
      */
-    public function getGeneratorRepositoryFor($table);
+    public function getGeneratorRepositoryFor(string $table): GeneratorRepository;
 
     /**
      * Returns random value generator implementation, actually Faker's Generator object.
      *
      * @return RandomValueGenerator Random value generator object
      */
-    public function getRandomValueGenerator();
+    public function getRandomValueGenerator(): RandomValueGenerator;
 }

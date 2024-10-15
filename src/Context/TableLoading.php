@@ -16,37 +16,18 @@ class TableLoading
     use WithContextTrait;
 
     /**
-     * @var FixtureLoadableInterface
-     */
-    protected $fixtureLoader;
-
-    /**
-     * @var string
-     */
-    protected $table;
-
-    /**
-     * @var FixtureRepository
-     */
-    protected $fixtureRepository;
-
-    /**
      * @param FixtureLoadableInterface $fixtureLoader
      * @param string $table
      * @param FixtureRepository $fixtureRepository
      * @param GeneratorRepository $generatorRepository
      */
     public function __construct(
-        FixtureLoadableInterface $fixtureLoader,
-        $table,
-        FixtureRepository $fixtureRepository,
+        protected FixtureLoadableInterface $fixtureLoader,
+        protected string $table,
+        protected FixtureRepository $fixtureRepository,
         GeneratorRepository $generatorRepository
     )
     {
-        $this->fixtureLoader = $fixtureLoader;
-        $this->table = $table;
-        $this->fixtureRepository = $fixtureRepository;
-
         $this->generatorRepository = $generatorRepository;
         $this->generators = [];
     }
@@ -56,9 +37,9 @@ class TableLoading
      *
      * @param int $amount
      * @param int $baseIndex
-     * @return array
+     * @return list<int|string>
      */
-    public function generate($amount = 1, $baseIndex = 0)
+    public function generate(int $amount = 1, int $baseIndex = 0): array
     {
         $fixtureSource = new GeneratedRecordFixture(
             new GeneratorComposite($this->generators),
@@ -72,11 +53,11 @@ class TableLoading
      * Inserts records filled by fixed data specified by array.
      * Unspecified column value produced by Generator stack implicitly.
      *
-     * @param string|array $fixture
+     * @param array|string $fixture
      * @param int|null $baseIndex
-     * @return array
+     * @return list<int|string>
      */
-    public function load($fixture, $baseIndex = null)
+    public function load(array|string $fixture, ?int $baseIndex = null): array
     {
         if (is_array($fixture)) {
             $fixtureSource = new FixedArrayFixture($fixture);

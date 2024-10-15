@@ -8,25 +8,22 @@ class TableGeneratorDefinition
     use WithContextTrait;
 
     /**
-     * @var string
-     */
-    protected $name;
-
-    /**
      * @param string $name
      * @param GeneratorRepository $generatorRepository
      */
-    public function __construct($name, GeneratorRepository $generatorRepository)
+    public function __construct(
+        protected string $name,
+        GeneratorRepository $generatorRepository
+    )
     {
-        $this->name = $name;
         $this->generatorRepository = $generatorRepository;
         $this->generators = [];
     }
 
     /**
-     * @param array|callable $definition
+     * @param callable|array $definition
      */
-    public function define($definition = [])
+    public function define(callable|array $definition = []): void
     {
         $generators = $this->generators;
 

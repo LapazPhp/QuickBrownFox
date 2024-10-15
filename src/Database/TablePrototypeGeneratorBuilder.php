@@ -2,6 +2,7 @@
 namespace Lapaz\QuickBrownFox\Database;
 
 use Doctrine\DBAL\Connection;
+use Doctrine\DBAL\Exception as DBALException;
 use Doctrine\DBAL\Schema\AbstractSchemaManager;
 use Doctrine\DBAL\Schema\Column;
 use Doctrine\DBAL\Schema\ForeignKeyConstraint;
@@ -14,43 +15,34 @@ use Lapaz\QuickBrownFox\Value\ValueProviderInterface;
 class TablePrototypeGeneratorBuilder
 {
     /**
-     * @var Connection
-     */
-    protected $connection;
-
-    /**
-     * @var RepositoryAggregateInterface
-     */
-    protected $repositoryAggregare;
-
-    /**
      * @var ColumnValueFactory
      */
-    protected $columnValueFactory;
+    protected ColumnValueFactory $columnValueFactory;
 
     /**
-     * @var Column[][]
+     * @var array<string,list<Column>>
      */
-    protected $valueRequiredColumnsMap;
+    protected array $valueRequiredColumnsMap;
 
     /**
-     * @var ForeignKeyConstraint[][]
+     * @var array<string,list<ForeignKeyConstraint>>
      */
-    protected $valueRequiredForeignKeysMap;
+    protected array $valueRequiredForeignKeysMap;
 
     private ?AbstractSchemaManager $schemaManager = null;
 
     /**
      * @param Connection $connection
-     * @param RepositoryAggregateInterface $repositoryAggregare
+     * @param RepositoryAggregateInterface $repositoryAggregate
      */
-    public function __construct(Connection $connection, RepositoryAggregateInterface $repositoryAggregare)
+    public function __construct(
+        protected Connection $connection,
+        protected RepositoryAggregateInterface $repositoryAggregate
+    )
     {
-        $this->connection = $connection;
-        $this->repositoryAggregare = $repositoryAggregare;
         $this->columnValueFactory = new ColumnValueFactory(
             $connection,
-            $repositoryAggregare->getRandomValueGenerator()
+            $repositoryAggregate->getRandomValueGenerator()
         );
         $this->valueRequiredColumnsMap = [];
         $this->valueRequiredForeignKeysMap = [];
@@ -59,11 +51,14 @@ class TablePrototypeGeneratorBuilder
     /**
      * @return Connection
      */
-    public function getConnection()
+    public function getConnection(): Connection
     {
         return $this->connection;
     }
 
+    /**
+     * @throws DBALException
+     */
     private function getSchemaManager(): AbstractSchemaManager
     {
         if ($this->schemaManager === null) {
@@ -75,20 +70,21 @@ class TablePrototypeGeneratorBuilder
     /**
      * @param string $table
      * @return GeneratorInterface
+     * @throws DBALException
      */
-    public function build($table)
+    public function build(string $table): GeneratorInterface
     {
         $prototypeGenerator = new ValueSetGenerator(array_merge(
             $this->normalColumnValueProviders($table),
             $this->foreignKeyColumnValueProviders($table)
         ));
 
-        $generatorrepository = $this->repositoryAggregare->getGeneratorRepositoryFor($table);
-        $tableDefaultsGeneratoer = $generatorrepository->getTableDefaults();
-        if ($tableDefaultsGeneratoer) {
+        $generatorRepository = $this->repositoryAggregate->getGeneratorRepositoryFor($table);
+        $tableDefaultsGenerator = $generatorRepository->getTableDefaults();
+        if ($tableDefaultsGenerator) {
             $prototypeGenerator = new GeneratorComposite([
                 $prototypeGenerator,
-                $tableDefaultsGeneratoer,
+                $tableDefaultsGenerator,
             ]);
         }
 
@@ -97,9 +93,10 @@ class TablePrototypeGeneratorBuilder
 
     /**
      * @param string $table
-     * @return ValueProviderInterface[]
+     * @return array<string,ValueProviderInterface>
+     * @throws DBALException
      */
-    protected function normalColumnValueProviders($table)
+    protected function normalColumnValueProviders(string $table): array
     {
         $valueProviders = [];
         foreach ($this->valueRequiredColumns($table) as $column) {
@@ -110,9 +107,10 @@ class TablePrototypeGeneratorBuilder
 
     /**
      * @param string $table
-     * @return Column[]
+     * @return list<Column>
+     * @throws DBALException
      */
-    protected function valueRequiredColumns($table)
+    protected function valueRequiredColumns(string $table): array
     {
         if (!isset($this->valueRequiredColumnsMap[$table])) {
             $schemaManager = $this->getSchemaManager();
@@ -133,16 +131,17 @@ class TablePrototypeGeneratorBuilder
      * @param Column $column
      * @return bool
      */
-    protected function isValueRequiredFor(Column $column)
+    protected function isValueRequiredFor(Column $column): bool
     {
         return $column->getNotnull() && $column->getDefault() === null && !$column->getAutoincrement();
     }
 
     /**
      * @param string $table
-     * @return ValueProviderInterface[]
+     * @return array<string,ValueProviderInterface>
+     * @throws DBALException
      */
-    protected function foreignKeyColumnValueProviders($table)
+    protected function foreignKeyColumnValueProviders(string $table): array
     {
         $valueProviders = [];
         foreach ($this->valueRequiredForeignKeys($table) as $foreignKey) {
@@ -161,9 +160,10 @@ class TablePrototypeGeneratorBuilder
 
     /**
      * @param string $table
-     * @return ForeignKeyConstraint[]
+     * @return list<ForeignKeyConstraint>
+     * @throws DBALException
      */
-    protected function valueRequiredForeignKeys($table)
+    protected function valueRequiredForeignKeys(string $table): array
     {
         if (!isset($this->valueRequiredForeignKeysMap[$table])) {
             $schemaManager = $this->getSchemaManager();
@@ -189,7 +189,7 @@ class TablePrototypeGeneratorBuilder
      * @param Column[] $columns
      * @return bool
      */
-    protected function isValueRequiredAny(array $columns)
+    protected function isValueRequiredAny(array $columns): bool
     {
         foreach ($columns as $column) {
             if ($this->isValueRequiredFor($column)) {

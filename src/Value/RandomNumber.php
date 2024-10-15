@@ -6,7 +6,7 @@ class RandomNumber extends AbstractRandomValue
     /**
      * @inheritdoc
      */
-    public function getAt($index)
+    public function getAt(int $index): int
     {
         $length = $this->column->getLength();
         // Digits must be within integer limit.

@@ -17,9 +17,9 @@ class TableDefaultsDefinition
     }
 
     /**
-     * @param array|callable $definition
+     * @param callable|array $definition
      */
-    public function define($definition = [])
+    public function define(callable|array $definition = []): void
     {
         $generators = $this->generators;
 

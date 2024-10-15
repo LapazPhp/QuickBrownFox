@@ -10,13 +10,13 @@ interface GeneratorInterface
 {
     /**
      * @param int $index
-     * @return ValueProviderInterface[]
+     * @return list<ValueProviderInterface>
      */
-    public function extractAt($index);
+    public function extractAt(int $index): array;
 
     /**
      * @param int $index
-     * @return array
+     * @return array<string,mixed>
      */
-    public function generateAt($index);
+    public function generateAt(int $index): array;
 }

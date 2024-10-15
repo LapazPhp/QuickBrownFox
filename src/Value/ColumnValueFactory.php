@@ -29,6 +29,7 @@ use Doctrine\DBAL\Types\TextType;
 use Doctrine\DBAL\Types\TimeImmutableType;
 use Doctrine\DBAL\Types\TimeType;
 use Faker\Generator as RandomValueGenerator;
+use InvalidArgumentException;
 
 class ColumnValueFactory
 {
@@ -61,23 +62,14 @@ class ColumnValueFactory
     ];
 
     /**
-     * @var Connection
-     */
-    protected $connection;
-
-    /**
-     * @var RandomValueGenerator
-     */
-    protected $randomValueGenerator;
-
-    /**
      * @param Connection $connection
      * @param RandomValueGenerator $randomValueGenerator
      */
-    public function __construct(Connection $connection, RandomValueGenerator $randomValueGenerator)
+    public function __construct(
+        protected Connection $connection,
+        protected RandomValueGenerator $randomValueGenerator
+    )
     {
-        $this->connection = $connection;
-        $this->randomValueGenerator = $randomValueGenerator;
     }
 
     /**
@@ -88,7 +80,7 @@ class ColumnValueFactory
     {
         $typeClass = get_class($column->getType());
         if (!isset(static::GENERATOR_MAPPING[$typeClass])) {
-            throw new \InvalidArgumentException("Unsupported column type: $typeClass");
+            throw new InvalidArgumentException("Unsupported column type: $typeClass");
         }
 
         $class = static::GENERATOR_MAPPING[$typeClass];

@@ -7,38 +7,24 @@ use Lapaz\QuickBrownFox\Generator\GeneratorInterface;
 class GeneratedRecordFixture implements FixtureInterface
 {
     /**
-     * @var GeneratorInterface
-     */
-    protected $generator;
-
-    /**
-     * @var int
-     */
-    protected $repeatAmount;
-
-    /**
-     * @var int
-     */
-    protected $defaultBaseIndex;
-
-    /**
      * @param GeneratorInterface $generator
      * @param int $repeatAmount
-     * @param int $defaultBaseIndex
+     * @param int|null $defaultBaseIndex
      */
-    public function __construct(GeneratorInterface $generator, $repeatAmount, $defaultBaseIndex = 0)
+    public function __construct(
+        protected GeneratorInterface $generator,
+        protected int $repeatAmount,
+        protected ?int $defaultBaseIndex = 0
+    )
     {
-        $this->generator = $generator;
-        $this->repeatAmount = $repeatAmount;
-        $this->defaultBaseIndex = $defaultBaseIndex;
     }
 
     /**
      * @param GeneratorInterface $prototype
      * @param int|null $baseIndex
-     * @return array
+     * @return list<array<string,mixed>>
      */
-    public function generateRecords(GeneratorInterface $prototype, $baseIndex = null)
+    public function generateRecords(GeneratorInterface $prototype, ?int $baseIndex = null): array
     {
         if ($baseIndex === null) {
             $baseIndex = $this->defaultBaseIndex;
