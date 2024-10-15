@@ -10,6 +10,6 @@ class RandomDateTime extends AbstractRandomValue
      */
     public function getAt(int $index): DateTime
     {
-        return $this->randomValueGenerator->dateTime;
+        return $this->randomValueGenerator->dateTime();
     }
 }
