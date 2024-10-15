@@ -26,7 +26,6 @@ class Loader
 
     /**
      * @param string $table
-     * @throws DBALException
      */
     public function resetCascading(string $table): void
     {
@@ -38,34 +37,34 @@ class Loader
      * @param string $table
      * @param list<array<string,mixed>> $records
      * @return list<int|string>
-     * @throws DBALException
      */
     public function load(string $table, array $records): array
     {
-        $columnTypes = $this->metadataManager->getColumnTypes($table);
-        $primaryKeys = [];
-        foreach ($records as $record) {
-            $types = [];
-            foreach (array_keys($record) as $column) {
-                $types[$column] = $columnTypes[$column];
-            }
+        try {
+            $columnTypes = $this->metadataManager->getColumnTypes($table);
+            $primaryKeys = [];
+            foreach ($records as $record) {
+                $types = [];
+                foreach (array_keys($record) as $column) {
+                    $types[$column] = $columnTypes[$column];
+                }
 
-            // Avoid PDO MySQL bug
-            list($record, $types) = $this->phpBug38546RemapBooleanToIntForPDOMySQL($record, $types);
+                // Avoid PDO MySQL bug
+                list($record, $types) = $this->phpBug38546RemapBooleanToIntForPDOMySQL($record, $types);
 
-            try {
                 $affectedRows = $this->connection->insert($table, $record, $types);
                 if ($affectedRows < 1) {
                     throw new DatabaseException('INSERT was sent but actually no rows affected');
                 }
                 // More than 2 rows may be affected successfully by DB trigger.
-            } catch (DBALException $e) {
-                throw DatabaseException::fromDBALException($e);
+
+                $primaryKeys[] = $this->connection->lastInsertId();
+                // FIXME Check when single ID not presented (UUID, complex pk or such as)
             }
-            $primaryKeys[] = $this->connection->lastInsertId();
-            // FIXME Check when single ID not presented (UUID, complex pk or such as)
+            return $primaryKeys;
+        } catch (DBALException $e) {
+            throw DatabaseException::fromDBALException($e);
         }
-        return $primaryKeys;
     }
 
     /**

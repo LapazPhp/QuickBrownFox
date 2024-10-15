@@ -27,47 +27,42 @@ class TableCleaner
 
     /**
      * @param string $table
-     * @throws DBALException
      */
     public function clean(string $table): void
     {
-        $invertReferencingTables = $this->metadataManager->getInvertReferencingTables($table);
+        try {
+            $invertReferencingTables = $this->metadataManager->getInvertReferencingTables($table);
 
-        foreach ($invertReferencingTables as $referencingTable) {
-            $clearableForeignColumns = $this->metadataManager->getNullableForeignKeys($referencingTable);
-            if (!empty($clearableForeignColumns)) {
-                $set = [];
-                foreach ($clearableForeignColumns as $clearableForeignColumn) {
-                    $set[] = $this->connection->quoteIdentifier($clearableForeignColumn) . " = NULL";
-                }
-                try {
+            foreach ($invertReferencingTables as $referencingTable) {
+                $clearableForeignColumns = $this->metadataManager->getNullableForeignKeys($referencingTable);
+                if (!empty($clearableForeignColumns)) {
+                    $set = [];
+                    foreach ($clearableForeignColumns as $clearableForeignColumn) {
+                        $set[] = $this->connection->quoteIdentifier($clearableForeignColumn) . " = NULL";
+                    }
                     $this->connection->executeStatement(
                         "UPDATE " . $this->connection->quoteIdentifier($referencingTable) .
                         " SET " . implode(", ", $set)
                     );
-                } catch (DBALException $e) {
-                    throw DatabaseException::fromDBALException($e);
                 }
             }
-        }
 
-        foreach ($this->metadataManager->getReferencingTables($table) as $referencingTable) {
-            if (!isset($this->finishedTables[$referencingTable])) {
-                $this->clean($referencingTable);
+            foreach ($this->metadataManager->getReferencingTables($table) as $referencingTable) {
+                if (!isset($this->finishedTables[$referencingTable])) {
+                    $this->clean($referencingTable);
+                }
             }
-        }
 
-        try {
             $this->connection->executeStatement("DELETE FROM " . $this->connection->quoteIdentifier($table));
+            $this->finishedTables[$table] = true;
+
+            foreach ($invertReferencingTables as $referencingTable) {
+                if (!isset($this->finishedTables[$referencingTable])) {
+                    $this->clean($referencingTable);
+                }
+            }
         } catch (DBALException $e) {
             throw DatabaseException::fromDBALException($e);
-        }
-        $this->finishedTables[$table] = true;
-
-        foreach ($invertReferencingTables as $referencingTable) {
-            if (!isset($this->finishedTables[$referencingTable])) {
-                $this->clean($referencingTable);
-            }
         }
     }
 }

@@ -2,7 +2,6 @@
 namespace Lapaz\QuickBrownFox\Database;
 
 use Doctrine\DBAL\Connection;
-use Doctrine\DBAL\Exception as DBALException;
 use Doctrine\DBAL\Schema\AbstractSchemaManager;
 use Doctrine\DBAL\Schema\Column;
 use Doctrine\DBAL\Schema\ForeignKeyConstraint;
@@ -57,20 +56,8 @@ class TablePrototypeGeneratorBuilder
     }
 
     /**
-     * @throws DBALException
-     */
-    private function getSchemaManager(): AbstractSchemaManager
-    {
-        if ($this->schemaManager === null) {
-            $this->schemaManager = $this->connection->createSchemaManager();
-        }
-        return $this->schemaManager;
-    }
-
-    /**
      * @param string $table
      * @return GeneratorInterface
-     * @throws DBALException
      */
     public function build(string $table): GeneratorInterface
     {
@@ -94,7 +81,6 @@ class TablePrototypeGeneratorBuilder
     /**
      * @param string $table
      * @return array<string,ValueProviderInterface>
-     * @throws DBALException
      */
     protected function normalColumnValueProviders(string $table): array
     {
@@ -108,12 +94,11 @@ class TablePrototypeGeneratorBuilder
     /**
      * @param string $table
      * @return list<Column>
-     * @throws DBALException
      */
     protected function valueRequiredColumns(string $table): array
     {
         if (!isset($this->valueRequiredColumnsMap[$table])) {
-            $schemaManager = $this->getSchemaManager();
+            $schemaManager = new SchemaManagerProxy($this->connection);
             $columns = $schemaManager->listTableColumns($table);
 
             $valueRequiredColumns = [];
@@ -139,7 +124,6 @@ class TablePrototypeGeneratorBuilder
     /**
      * @param string $table
      * @return array<string,ValueProviderInterface>
-     * @throws DBALException
      */
     protected function foreignKeyColumnValueProviders(string $table): array
     {
@@ -161,12 +145,11 @@ class TablePrototypeGeneratorBuilder
     /**
      * @param string $table
      * @return list<ForeignKeyConstraint>
-     * @throws DBALException
      */
     protected function valueRequiredForeignKeys(string $table): array
     {
         if (!isset($this->valueRequiredForeignKeysMap[$table])) {
-            $schemaManager = $this->getSchemaManager();
+            $schemaManager = new SchemaManagerProxy($this->connection);
             $columns = $schemaManager->listTableColumns($table);
             $foreignKeys = $schemaManager->listTableForeignKeys($table);
 

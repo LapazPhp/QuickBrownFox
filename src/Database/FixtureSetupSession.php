@@ -1,7 +1,6 @@
 <?php
 namespace Lapaz\QuickBrownFox\Database;
 
-use Doctrine\DBAL\Exception as DBALException;
 use Lapaz\QuickBrownFox\Context\FixtureLoadableInterface;
 use Lapaz\QuickBrownFox\Context\TableLoading;
 use Lapaz\QuickBrownFox\Exception\UnexpectedStateException;
@@ -50,7 +49,6 @@ class FixtureSetupSession implements FixtureLoadableInterface
 
     /**
      * @param string $table
-     * @throws DBALException
      */
     public function reset(string $table): void
     {
@@ -63,7 +61,6 @@ class FixtureSetupSession implements FixtureLoadableInterface
      * @param FixtureInterface $fixtureSource
      * @param int|null $baseIndex
      * @return list<int|string>
-     * @throws DBALException
      */
     public function load(string $table, FixtureInterface $fixtureSource, ?int $baseIndex = null): array
     {

@@ -2,6 +2,7 @@
 namespace Lapaz\QuickBrownFox\Database;
 
 use Doctrine\DBAL\Exception as DBALException;
+use Lapaz\QuickBrownFox\Exception\DatabaseException;
 use Lapaz\QuickBrownFox\Value\ForeignKeyReferencedValue;
 use Lapaz\QuickBrownFox\Value\ValueProviderInterface;
 
@@ -43,7 +44,6 @@ class ForeignTableFetcher implements ValueProviderInterface
     /**
      * @param int $index
      * @return mixed
-     * @throws DBALException
      */
     public function getAt(int $index): mixed
     {
@@ -53,7 +53,6 @@ class ForeignTableFetcher implements ValueProviderInterface
 
     /**
      * @param int $maxAmount
-     * @throws DBALException
      * @noinspection PhpSameParameterValueInspection
      */
     private function ensureForeignRecords(int $maxAmount): void
@@ -70,18 +69,22 @@ class ForeignTableFetcher implements ValueProviderInterface
 
         $table = $connection->quoteIdentifier($this->table);
 
-        $this->foreignRecords = $connection->fetchAllAssociative("SELECT $fields FROM $table LIMIT $maxAmount");
+        try {
+            $this->foreignRecords = $connection->fetchAllAssociative("SELECT $fields FROM $table LIMIT $maxAmount");
 
-        if (!empty($this->foreignRecords)) {
-            return;
+            if (!empty($this->foreignRecords)) {
+                return;
+            }
+
+            $prototypeGenerator = $this->prototypeBuilder->build($this->table);
+            $record = $prototypeGenerator->generateAt(0);
+
+            $loader = new Loader($connection);
+            $loader->load($this->table, [$record]);
+
+            $this->foreignRecords = $connection->fetchAllAssociative("SELECT $fields FROM $table LIMIT $maxAmount");
+        } catch (DBALException $e) {
+            throw DatabaseException::fromDBALException($e);
         }
-
-        $prototypeGenerator = $this->prototypeBuilder->build($this->table);
-        $record = $prototypeGenerator->generateAt(0);
-
-        $loader = new Loader($connection);
-        $loader->load($this->table, [$record]);
-
-        $this->foreignRecords = $connection->fetchAllAssociative("SELECT $fields FROM $table LIMIT $maxAmount");
     }
 }
