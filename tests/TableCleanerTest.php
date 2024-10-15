@@ -5,8 +5,6 @@ namespace Lapaz\QuickBrownFox;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\DriverManager;
 use Doctrine\DBAL\Exception as DBALException;
-use Doctrine\DBAL\Logging\DebugStack;
-use Doctrine\DBAL\Logging\SQLLogger;
 use Lapaz\QuickBrownFox\Database\MetadataManager;
 use Lapaz\QuickBrownFox\Database\TableCleaner;
 use PHPUnit\Framework\TestCase;
@@ -17,11 +15,6 @@ class TableCleanerTest extends TestCase
      * @var Connection
      */
     protected $connection;
-
-    /**
-     * @var SQLLogger
-     */
-    protected $sqlLogger;
 
     /**
      * @var TableCleaner
@@ -82,14 +75,14 @@ class TableCleanerTest extends TestCase
         // $url = 'sqlite:///' . realpath(__DIR__ . '/..') . '/loader-test.sqlite';
 
         try {
-            $this->connection = DriverManager::getConnection(['url' => $url]);
+            $this->connection = DriverManager::getConnection([
+                'driver' => 'pdo_sqlite',
+                'url' => $url,
+            ]);
             $this->setUpSchema();
         } catch (DBALException $e) {
             throw new \RuntimeException($e->getMessage(), $e->getCode(), $e);
         }
-
-        $this->sqlLogger = new DebugStack();
-        // $this->connection->getConfiguration()->setSQLLogger($this->sqlLogger);
 
         $this->tableCleaner = new TableCleaner(
             $this->connection,

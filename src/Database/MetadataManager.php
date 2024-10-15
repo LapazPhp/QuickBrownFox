@@ -2,6 +2,8 @@
 namespace Lapaz\QuickBrownFox\Database;
 
 use Doctrine\DBAL\Connection;
+use Doctrine\DBAL\Schema\AbstractSchemaManager;
+use Doctrine\DBAL\Types\Type;
 
 class MetadataManager
 {
@@ -11,7 +13,7 @@ class MetadataManager
     protected $connection;
 
     /**
-     * @var string[][]
+     * @var Type[][]
      */
     protected $tableColumnTypeMap;
     /**
@@ -26,6 +28,8 @@ class MetadataManager
      * @var string[][]
      */
     protected $nullableForeignKeysMap;
+
+    private ?AbstractSchemaManager $schemaManager = null;
 
     /**
      * MetadataManager constructor.
@@ -70,6 +74,14 @@ class MetadataManager
         }
     }
 
+    private function getSchemaManager(): AbstractSchemaManager
+    {
+        if ($this->schemaManager === null) {
+            $this->schemaManager = $this->connection->createSchemaManager();
+        }
+        return $this->schemaManager;
+    }
+
     private function analyzeForeignTableConstraint()
     {
         if ($this->referencingTablesMap !== null && $this->invertReferencingTablesMap !== null) {
@@ -78,7 +90,7 @@ class MetadataManager
 
         $this->referencingTablesMap = [];
         $this->invertReferencingTablesMap = [];
-        $schemaManager = $this->connection->getSchemaManager();
+        $schemaManager = $this->getSchemaManager();
         $tables = $schemaManager->listTableNames();
         foreach ($tables as $referencingTableName) {
             $fks = $schemaManager->listTableForeignKeys($referencingTableName);
@@ -119,11 +131,11 @@ class MetadataManager
         }
 
         $this->nullableForeignKeysMap[$targetTable] = [];
-        $schemaManager = $this->connection->getSchemaManager();
+        $schemaManager = $this->getSchemaManager();
 
         $fks = $schemaManager->listTableForeignKeys($targetTable);
         foreach ($fks as $fk) {
-            $localColumnNames = $fk->getColumns();
+            $localColumnNames = $fk->getLocalColumns();
             if ($this->isNullableColumnsAll($localColumnNames, $targetTable)) {
                 foreach ($localColumnNames as $localColumnName) {
                     if (!in_array($localColumnName, $this->nullableForeignKeysMap[$targetTable])) {
@@ -138,7 +150,7 @@ class MetadataManager
 
     private function isNullableColumnsAll(array $columnNames, $table)
     {
-        $schemaManager = $this->connection->getSchemaManager();
+        $schemaManager = $this->getSchemaManager();
         $columns = $schemaManager->listTableColumns($table);
         foreach ($columns as $column) {
             $name = $column->getName();
@@ -151,17 +163,17 @@ class MetadataManager
 
     /**
      * @param string $table
-     * @return string[]
+     * @return Type[]
      */
     public function getColumnTypes($table)
     {
         if (!isset($this->tableColumnTypeMap[$table])) {
-            $schemaManager = $this->connection->getSchemaManager();
+            $schemaManager = $this->getSchemaManager();
             $columns = $schemaManager->listTableColumns($table);
             $types = [];
             foreach ($columns as $column) {
                 $name = $column->getName();
-                $types[$name] = $column->getType()->getName();
+                $types[$name] = $column->getType();
             }
             $this->tableColumnTypeMap[$table] = $types;
         }

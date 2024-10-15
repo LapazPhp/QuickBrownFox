@@ -10,6 +10,6 @@ class UnsupportedType extends AbstractRandomValue
      */
     public function getAt($index)
     {
-        throw new UnsupportedTypeException("Unsupported type: " . $this->column->getType()->getName());
+        throw new UnsupportedTypeException("Unsupported type: " . get_class($this->column->getType()));
     }
 }

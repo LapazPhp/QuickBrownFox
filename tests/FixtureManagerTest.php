@@ -4,8 +4,6 @@ namespace Lapaz\QuickBrownFox;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Exception as DBALException;
 use Doctrine\DBAL\DriverManager;
-use Doctrine\DBAL\Logging\DebugStack;
-use Doctrine\DBAL\Logging\SQLLogger;
 use Lapaz\QuickBrownFox\Context\TableDefinition;
 use PHPUnit\Framework\TestCase;
 
@@ -15,11 +13,6 @@ class FixtureManagerTest extends TestCase
      * @var Connection
      */
     protected $connection;
-
-    /**
-     * @var SQLLogger
-     */
-    protected $sqlLogger;
 
     /**
      * @var FixtureManager
@@ -311,14 +304,14 @@ class FixtureManagerTest extends TestCase
         // $url = 'sqlite:///' . realpath(__DIR__ . '/..') . '/loader-test.sqlite';
 
         try {
-            $this->connection = DriverManager::getConnection(['url' => $url]);
+            $this->connection = DriverManager::getConnection([
+                'driver' => 'pdo_sqlite',
+                'url' => $url,
+            ]);
             $this->setUpSchema();
         } catch (DBALException $e) {
             throw new \RuntimeException($e->getMessage(), $e->getCode(), $e);
         }
-
-        $this->sqlLogger = new DebugStack();
-        // $this->connection->getConfiguration()->setSQLLogger($this->sqlLogger);
 
         $this->manager = new FixtureManager();
 

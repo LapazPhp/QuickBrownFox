@@ -2,6 +2,7 @@
 namespace Lapaz\QuickBrownFox\Database;
 
 use Doctrine\DBAL\Connection;
+use Doctrine\DBAL\Schema\AbstractSchemaManager;
 use Doctrine\DBAL\Schema\Column;
 use Doctrine\DBAL\Schema\ForeignKeyConstraint;
 use Lapaz\QuickBrownFox\Generator\GeneratorComposite;
@@ -37,6 +38,8 @@ class TablePrototypeGeneratorBuilder
      */
     protected $valueRequiredForeignKeysMap;
 
+    private ?AbstractSchemaManager $schemaManager = null;
+
     /**
      * @param Connection $connection
      * @param RepositoryAggregateInterface $repositoryAggregare
@@ -59,6 +62,14 @@ class TablePrototypeGeneratorBuilder
     public function getConnection()
     {
         return $this->connection;
+    }
+
+    private function getSchemaManager(): AbstractSchemaManager
+    {
+        if ($this->schemaManager === null) {
+            $this->schemaManager = $this->connection->createSchemaManager();
+        }
+        return $this->schemaManager;
     }
 
     /**
@@ -104,7 +115,7 @@ class TablePrototypeGeneratorBuilder
     protected function valueRequiredColumns($table)
     {
         if (!isset($this->valueRequiredColumnsMap[$table])) {
-            $schemaManager = $this->connection->getSchemaManager();
+            $schemaManager = $this->getSchemaManager();
             $columns = $schemaManager->listTableColumns($table);
 
             $valueRequiredColumns = [];
@@ -155,7 +166,7 @@ class TablePrototypeGeneratorBuilder
     protected function valueRequiredForeignKeys($table)
     {
         if (!isset($this->valueRequiredForeignKeysMap[$table])) {
-            $schemaManager = $this->connection->getSchemaManager();
+            $schemaManager = $this->getSchemaManager();
             $columns = $schemaManager->listTableColumns($table);
             $foreignKeys = $schemaManager->listTableForeignKeys($table);
 
