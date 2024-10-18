@@ -1,6 +1,6 @@
 <?php
 
-namespace Lapaz\QuickBrownFox;
+namespace Lapaz\QuickBrownFox\Database;
 
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\DriverManager;

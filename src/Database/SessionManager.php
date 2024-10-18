@@ -2,8 +2,9 @@
 namespace Lapaz\QuickBrownFox\Database;
 
 use Doctrine\DBAL\Connection;
+use Lapaz\QuickBrownFox\SessionManagerInterface;
 
-class SessionManager
+class SessionManager implements SessionManagerInterface
 {
     /**
      * @var Loader
@@ -40,7 +41,7 @@ class SessionManager
     }
 
     /**
-     * @return FixtureSetupSession
+     * @inheritDoc
      */
     public function newSession(): FixtureSetupSession
     {

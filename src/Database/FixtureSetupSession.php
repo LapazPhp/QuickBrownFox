@@ -5,8 +5,9 @@ use Lapaz\QuickBrownFox\Context\FixtureLoadableInterface;
 use Lapaz\QuickBrownFox\Context\TableLoading;
 use Lapaz\QuickBrownFox\Exception\UnexpectedStateException;
 use Lapaz\QuickBrownFox\Fixture\FixtureInterface;
+use Lapaz\QuickBrownFox\FixtureSetupSessionInterface;
 
-class FixtureSetupSession implements FixtureLoadableInterface
+class FixtureSetupSession implements FixtureLoadableInterface, FixtureSetupSessionInterface
 {
     /**
      * @var array<string, bool>
@@ -60,7 +61,7 @@ class FixtureSetupSession implements FixtureLoadableInterface
      * @param string $table
      * @param FixtureInterface $fixtureSource
      * @param int|null $baseIndex
-     * @return list<int|string>
+     * @return list<int|string|false>
      */
     public function load(string $table, FixtureInterface $fixtureSource, ?int $baseIndex = null): array
     {

@@ -285,10 +285,7 @@ class FixtureManagerTest extends TestCase
         $this->assertEquals(1, $rows[2]['parent_id']);
     }
 
-    /**
-     * @return Database\FixtureSetupSession
-     */
-    protected function newSession(): Database\FixtureSetupSession
+    protected function newSession(): FixtureSetupSessionInterface
     {
         return $this->manager->createSessionManager($this->connection)->newSession();
     }

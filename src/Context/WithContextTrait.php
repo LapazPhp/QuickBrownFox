@@ -17,10 +17,10 @@ trait WithContextTrait
     protected array $generators;
 
     /**
-     * @param mixed $definitions
+     * @param string|array<string,callable|scalar> $definitions
      * @return static
      */
-    public function with(mixed $definitions): static
+    public function with(string|array $definitions): static
     {
         // Normalize definitions to array even if single definition.
         $d = $definitions;

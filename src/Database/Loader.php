@@ -36,7 +36,7 @@ class Loader
     /**
      * @param string $table
      * @param list<array<string,mixed>> $records
-     * @return list<int|string>
+     * @return list<int|string|false>
      */
     public function load(string $table, array $records): array
     {

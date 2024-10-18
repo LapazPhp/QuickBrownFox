@@ -105,9 +105,9 @@ class FixtureManager implements RepositoryAggregateInterface
      * Creates a session manager from DBAL database connection.
      *
      * @param Connection|array $connection DBAL connection
-     * @return SessionManager Session manager
+     * @return SessionManagerInterface Session manager
      */
-    public function createSessionManager(Connection|array $connection): SessionManager
+    public function createSessionManager(Connection|array $connection): SessionManagerInterface
     {
         // PDO connection is no longer supported.
         // https://github.com/doctrine/dbal/blob/3.0.0/UPGRADE.md#bc-break-user-provided-pdo-instance-is-no-longer-supported

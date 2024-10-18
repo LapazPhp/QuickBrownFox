@@ -7,11 +7,12 @@ use Lapaz\QuickBrownFox\Fixture\GeneratedRecordFixture;
 use Lapaz\QuickBrownFox\Fixture\GeneratorSupportedFixture;
 use Lapaz\QuickBrownFox\Generator\GeneratorComposite;
 use Lapaz\QuickBrownFox\Generator\GeneratorRepository;
+use Lapaz\QuickBrownFox\TableLoadingInterface;
 
 /**
  * Fixture loading context for the table.
  */
-class TableLoading
+class TableLoading implements TableLoadingInterface
 {
     use WithContextTrait;
 
@@ -33,11 +34,7 @@ class TableLoading
     }
 
     /**
-     * Inserts records filled by data produced by stacked Generators.
-     *
-     * @param int $amount
-     * @param int $baseIndex
-     * @return list<int|string>
+     * @inheritDoc
      */
     public function generate(int $amount = 1, int $baseIndex = 0): array
     {
@@ -50,12 +47,7 @@ class TableLoading
     }
 
     /**
-     * Inserts records filled by fixed data specified by array.
-     * Unspecified column value produced by Generator stack implicitly.
-     *
-     * @param array|string $fixture
-     * @param int|null $baseIndex
-     * @return list<int|string>
+     * @inheritDoc
      */
     public function load(array|string $fixture, ?int $baseIndex = null): array
     {
