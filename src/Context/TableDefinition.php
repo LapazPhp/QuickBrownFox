@@ -3,11 +3,12 @@ namespace Lapaz\QuickBrownFox\Context;
 
 use Lapaz\QuickBrownFox\Fixture\FixtureRepository;
 use Lapaz\QuickBrownFox\Generator\GeneratorRepository;
+use Lapaz\QuickBrownFox\TableDefinitionInterface;
 
 /**
  * Table definition context object.
  */
-class TableDefinition
+class TableDefinition implements TableDefinitionInterface
 {
     /**
      * @param FixtureRepository $fixtureRepository
@@ -23,32 +24,32 @@ class TableDefinition
     /**
      * Starts the table default definition.
      *
-     * @return TableDefaultsDefinition
+     * @return TableDefinitionDefaults
      */
-    public function defaults(): TableDefaultsDefinition
+    public function defaults(): TableDefinitionDefaults
     {
-        return new TableDefaultsDefinition($this->generatorRepository);
+        return new TableDefinitionDefaults($this->generatorRepository);
     }
 
     /**
      * Starts a predefined table generator definition.
      *
      * @param string $name
-     * @return TableGeneratorDefinition
+     * @return TableDefinitionGenerator
      */
-    public function generator(string $name): TableGeneratorDefinition
+    public function generator(string $name): TableDefinitionGenerator
     {
-        return new TableGeneratorDefinition($name, $this->generatorRepository);
+        return new TableDefinitionGenerator($name, $this->generatorRepository);
     }
 
     /**
      * Starts a predefined table fixture definition.
      *
      * @param string $name
-     * @return TableFixtureDefinition
+     * @return TableDefinitionFixture
      */
-    public function fixture(string $name): TableFixtureDefinition
+    public function fixture(string $name): TableDefinitionFixture
     {
-        return new TableFixtureDefinition($name, $this->fixtureRepository, $this->generatorRepository);
+        return new TableDefinitionFixture($name, $this->fixtureRepository, $this->generatorRepository);
     }
 }

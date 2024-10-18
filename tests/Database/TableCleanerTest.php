@@ -5,8 +5,6 @@ namespace Lapaz\QuickBrownFox\Database;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\DriverManager;
 use Doctrine\DBAL\Exception as DBALException;
-use Lapaz\QuickBrownFox\Database\MetadataManager;
-use Lapaz\QuickBrownFox\Database\TableCleaner;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
 

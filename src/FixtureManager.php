@@ -90,7 +90,7 @@ class FixtureManager implements RepositoryAggregateInterface
      * TableDefinition instance.
      *
      * @param string $table Table name
-     * @param callable(TableDefinition):void $callable Definition procedure callback
+     * @param callable(TableDefinitionInterface):void $callable Definition procedure callback
      */
     public function table(string $table, callable $callable): void
     {

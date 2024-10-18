@@ -3,8 +3,9 @@ namespace Lapaz\QuickBrownFox\Context;
 
 use Lapaz\QuickBrownFox\Fixture\FixtureRepository;
 use Lapaz\QuickBrownFox\Generator\GeneratorRepository;
+use Lapaz\QuickBrownFox\TableDefinitionFixtureInterface;
 
-class TableFixtureDefinition
+class TableDefinitionFixture implements TableDefinitionFixtureInterface
 {
     use WithContextTrait;
 
@@ -24,7 +25,7 @@ class TableFixtureDefinition
     }
 
     /**
-     * @param array $records
+     * @inheritDoc
      */
     public function define(array $records): void
     {

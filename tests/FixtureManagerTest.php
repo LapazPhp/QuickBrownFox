@@ -4,7 +4,6 @@ namespace Lapaz\QuickBrownFox;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Exception as DBALException;
 use Doctrine\DBAL\DriverManager;
-use Lapaz\QuickBrownFox\Context\TableDefinition;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
 
@@ -46,7 +45,7 @@ class FixtureManagerTest extends TestCase
      */
     public function testDefaultGenerator()
     {
-        $this->manager->table('foo', function (TableDefinition $td) {
+        $this->manager->table('foo', function (TableDefinitionInterface $td) {
             $td->defaults()->define([
                 'number2' => 2,
                 'number3' => 3,
@@ -69,7 +68,7 @@ class FixtureManagerTest extends TestCase
      */
     public function testPredefinedGenerator()
     {
-        $this->manager->table('foo', function (TableDefinition $td) {
+        $this->manager->table('foo', function (TableDefinitionInterface $td) {
             $td->defaults()->define([
                 'number2' => 2,
                 'number3' => 3
@@ -103,7 +102,7 @@ class FixtureManagerTest extends TestCase
      */
     public function testInlineCallbackGenerator()
     {
-        $this->manager->table('foo', function (TableDefinition $td) {
+        $this->manager->table('foo', function (TableDefinitionInterface $td) {
             $td->defaults()->define([
                 'number2' => 2,
                 'number3' => 3
@@ -135,7 +134,7 @@ class FixtureManagerTest extends TestCase
      */
     public function testPredefinedGeneratorComposition()
     {
-        $this->manager->table('foo', function (TableDefinition $td) {
+        $this->manager->table('foo', function (TableDefinitionInterface $td) {
             $td->generator('num2')->define([
                 'number2' => 2,
             ]);
@@ -198,7 +197,7 @@ class FixtureManagerTest extends TestCase
      */
     public function testPredefinedFixture()
     {
-        $this->manager->table('foo', function (TableDefinition $td) {
+        $this->manager->table('foo', function (TableDefinitionInterface $td) {
             $td->fixture('3rec')->define([
                 [
                     'number1' => 1,
@@ -234,7 +233,7 @@ class FixtureManagerTest extends TestCase
      */
     public function testPredefinedGeneratedFixture()
     {
-        $this->manager->table('foo', function (TableDefinition $td) {
+        $this->manager->table('foo', function (TableDefinitionInterface $td) {
             $td->fixture('3rec-num2seq')->defineGenerated(function ($i) {
                 return [
                     'number2' => $i,

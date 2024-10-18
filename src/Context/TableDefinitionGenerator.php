@@ -2,22 +2,27 @@
 namespace Lapaz\QuickBrownFox\Context;
 
 use Lapaz\QuickBrownFox\Generator\GeneratorRepository;
+use Lapaz\QuickBrownFox\TableDefinitionGeneratorInterface;
 
-class TableDefaultsDefinition
+class TableDefinitionGenerator implements TableDefinitionGeneratorInterface
 {
     use WithContextTrait;
 
     /**
+     * @param string $name
      * @param GeneratorRepository $generatorRepository
      */
-    public function __construct(GeneratorRepository $generatorRepository)
+    public function __construct(
+        protected string $name,
+        GeneratorRepository $generatorRepository
+    )
     {
         $this->generatorRepository = $generatorRepository;
         $this->generators = [];
     }
 
     /**
-     * @param callable|array $definition
+     * @inheritDoc
      */
     public function define(callable|array $definition = []): void
     {
@@ -27,6 +32,6 @@ class TableDefaultsDefinition
             $generators[] = $definition;
         }
 
-        $this->generatorRepository->defineTableDefaults($generators);
+        $this->generatorRepository->defineComposite($this->name, $generators);
     }
 }
