@@ -22,9 +22,7 @@ class TableDefinition implements TableDefinitionInterface
     }
 
     /**
-     * Starts the table default definition.
-     *
-     * @return TableDefinitionDefaults
+     * @inheritDoc
      */
     public function defaults(): TableDefinitionDefaults
     {
@@ -32,10 +30,7 @@ class TableDefinition implements TableDefinitionInterface
     }
 
     /**
-     * Starts a predefined table generator definition.
-     *
-     * @param string $name
-     * @return TableDefinitionGenerator
+     * @inheritDoc
      */
     public function generator(string $name): TableDefinitionGenerator
     {
@@ -43,10 +38,7 @@ class TableDefinition implements TableDefinitionInterface
     }
 
     /**
-     * Starts a predefined table fixture definition.
-     *
-     * @param string $name
-     * @return TableDefinitionFixture
+     * @inheritDoc
      */
     public function fixture(string $name): TableDefinitionFixture
     {

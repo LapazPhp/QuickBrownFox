@@ -33,9 +33,7 @@ class TableDefinitionFixture implements TableDefinitionFixtureInterface
     }
 
     /**
-     * @param callable|array|string $generator
-     * @param int $repeatAmount
-     * @param int $baseIndex
+     * @inheritDoc
      */
     public function defineGenerated(
         callable|array|string $generator,

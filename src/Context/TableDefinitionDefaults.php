@@ -18,7 +18,7 @@ class TableDefinitionDefaults implements TableDefinitionGeneratorInterface
     }
 
     /**
-     * @param callable|array $definition
+     * @inheritDoc
      */
     public function define(callable|array $definition = []): void
     {
