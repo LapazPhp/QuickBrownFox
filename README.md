@@ -51,7 +51,7 @@ Test your repository using randomly generated data by `generate` method:
         
         $books = (new BookRepository($this->connection))->findAll();
         $this->assertCount(10, $books);
-        $this->assertNotNull($book[0]->getAuthor());
+        $this->assertNotNull($books[0]->getAuthor());
     }
 ```
 
@@ -73,14 +73,11 @@ You can test with detailed data using `load` method:
             ['id' => 2, 'title' => 'Refactoring'],
         ]);
         
-        $book1 = (new BookRepository($this->connection))->get(1);
-        $this->assertEquals('Design Pattern', $book1->getTitle());
+        $repository = new BookRepository($this->connection);
 
-        $book2 = (new BookRepository($this->connection))->get(2);
-        $this->assertEquals('Refactoring', $book2->getTitle());
-        
-        $missing = (new BookRepository($this->connection))->get(3);
-        $this->assertNull($missing);
+        $this->assertEquals('Design Pattern', $repository->get(1)->getTitle());
+        $this->assertEquals('Refactoring', $repository->get(2)->getTitle());
+        $this->assertNull($repository->get(3));
     }
 ```
 
@@ -204,4 +201,4 @@ It's useful when table has some semantic constraints as its schema definition.
     });
 ```
 
-In adobe example, `type` column is filled with random value between 1 and 3 even if not specified by `with`.
+In above example, `type` column is filled with random value between 1 and 3 even if not specified by `with`.
