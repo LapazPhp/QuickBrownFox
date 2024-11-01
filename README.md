@@ -4,43 +4,26 @@
 
 ORM independent RDB fixture data generator.
 
-## Usage
+## Basic Usage
 
-Define some common rules while building bootstrap environment for your tests:
+At first, define a session manager in your DI container or service locator:
 
 ```php
+use Lapaz\QuickBrownFox\SessionManagerInterface;
+use Lapaz\QuickBrownFox\EasySessionManager;
+
 // $container points some application scope service locator
-$container->set(\Lapaz\QuickBrownFox\Database\SessionManager::class, function() use ($container) {
-    $fixtures = new \Lapaz\QuickBrownFox\FixtureManager();
-    
-    $fixtures->table('authors', function ($td) {
-        $td->fixture('GoF')->define([
-            [ 'name' => "Erich Gamma" ],
-            [ 'name' => "Richard Helm" ],
-            [ 'name' => "Ralph Johnson" ],
-            [ 'name' => "John Vlissides" ],
-        ]);
-    });
-    
-    $fixtures->table('books', function ($td) {
-        $td->generator('DesignPattern-N')->define(function($i) {
-            return [
-                'title' => 'Design Pattern ' . ($i + 1),
-                'code' => sprintf('000-000-%03d', $i),
-                // not needed: 'author_id' => ?
-            ];
-        });
-    });
-    
-    // 'database' is params for DBAL DriverManager or connection itself.
-    return $fixtures->createSessionManager($container->get('database'));
+$container->set(SessionManagerInterface::class, function() use ($container) {
+    return new EasySessionManager($container->get('dbal.connection'));
+    // or return new EasySessionManager([/*DBAL connection parameters*/]);
 });
 ```
 
-Prepare new test session:
+Prepare new test session in your test case:
 
 ```php
 use PHPUnit\Framework\TestCase;
+use Lapaz\QuickBrownFox\SessionManagerInterface;
 
 class BookRepositoryTest extends TestCase
 {
@@ -49,98 +32,167 @@ class BookRepositoryTest extends TestCase
     protected function setUp()
     {
         /** @var ContainerInterface $container */
-        $this->session = $container->get(\Lapaz\QuickBrownFox\Database\SessionManager::class)->newSession();
+        $this->session = $container->get(SessionManagerInterface::class)->newSession();
     }
 }
 ```
 
-Add tests using predefined fixtures and generators:
+Session indicates single testing context. Database tables are automatically cleaned up in each sessions.
+`tearDown` method is not necessary. So, you can see the last state of database after test.
+
+### generate
+
+Test your repository using randomly generated data by `generate` method:
 
 ```php
     public function testFindBook()
     {
-        $this->session->into('authors')->load('GoF');
-        $this->session->into('books')->with('DesignPattern-N')->generate(10);
+        $this->session->into('books')->generate(10);
         
         $books = (new BookRepository($this->connection))->findAll();
         $this->assertCount(10, $books);
-        $this->assertEquals("Design Pattern 1", $book[0]->getTitle());
-        
         $this->assertNotNull($book[0]->getAuthor());
     }
 ```
 
-NOTE: Non-null foreign key constraints are randomly resolved if not present.
+In above example, `generate` method generates 10 random books. You don't need to care column definition.
+QuickBrownFox automatically fills non-null columns with random values.
 
+Also you don't need to care relative tables because foreign key constraints are resolved automatically.
+If depending table is not filled yet, QuickBrownFox generates data for it.
 
-You can use inline fixture instead of predefined one:
+### load
+
+You can test with detailed data using `load` method:
 
 ```php
-        $this->session->into('authors')->load([
-            [ 'name' => "Erich Gamma" ],
-            [ 'name' => "Richard Helm" ],
-            [ 'name' => "Ralph Johnson" ],
-            [ 'name' => "John Vlissides" ],
+    public function testGetBook()
+    {
+        $this->session->into('books')->load([
+            ['id' => 1, 'title' => 'Design Pattern'],
+            ['id' => 2, 'title' => 'Refactoring'],
         ]);
+        
+        $book1 = (new BookRepository($this->connection))->get(1);
+        $this->assertEquals('Design Pattern', $book1->getTitle());
+
+        $book2 = (new BookRepository($this->connection))->get(2);
+        $this->assertEquals('Refactoring', $book2->getTitle());
+        
+        $missing = (new BookRepository($this->connection))->get(3);
+        $this->assertNull($missing);
+    }
 ```
 
-And inline generator:
+In this case, `load` method loads specific data. If you don't specify some columns or relationships,
+QuickBrownFox fills them with random values.
+
+### with
+
+You can specify automatically filled value patterns using `with` method:
 
 ```php
+    public function testFindBook()
+    {
         $this->session->into('books')->with(function($i) {
             return [
                 'title' => 'Design Pattern ' . ($i + 1),
                 'code' => sprintf('000-000-%03d', $i),
             ];
         })->generate(10);
-```
+        
+        // test code here
+    }
 
-Common attributes can be set for array form fixture data.
-
-```php
-        $this->session->into('authors')->with([
-            'specialist' => true,
+    public function testGetBook()
+    {
+        $this->session->into('books')->with([
+            'preferred' => true,
             'rating' => function($i) { return 80 + $i * 5; },
         ])->load([
-            [ 'name' => "Erich Gamma" ],
-            [ 'name' => "Richard Helm" ],
-            [ 'name' => "Ralph Johnson" ],
-            [ 'name' => "John Vlissides" ],
+            ['id' => 1, 'title' => 'Design Pattern'],
+            ['id' => 2, 'title' => 'Refactoring'],
         ]);
+        
+        // test code here
+    }
 ```
 
-You can append extra data repeatedly within a session.
-These are deleted automatically when the next session would use the same table.
+`with` method sets common attributes for each data by callable which returns array.
+You can also use an array which has callable or constant values.
+
+
+## Advanced Usage
+
+### Predefined Fixtures and Generators
+
+QuickBrownFox supports predefined fixtures and generators.
 
 ```php
-        $this->session->into('authors')->with([
-            'specialist' => false,
-            'rating' => function() { return mt_rand(30, 50); },
-        ])->generate(6));
+use Lapaz\QuickBrownFox\SessionManagerInterface;
+use Lapaz\QuickBrownFox\FixtureManager;
 
-        $this->session->into('authors')->with([
-            'specialist' => false,
-            'rating' => function() { return mt_rand(30, 50); },
-        ])->generate(6));
+// $container points some application scope service locator
+$container->set(SessionManagerInterface::class, function() use ($container) {
+    $fixtures = new FixtureManager();
+    
+    $fixtures->table('authors', function ($td) {
+        $td->fixture('GoF')->define([
+            ['id' => 1, 'name' => "Erich Gamma"],
+            ['id' => 2, 'name' => "Richard Helm"],
+            ['id' => 3, 'name' => "Ralph Johnson"],
+            ['id' => 4, 'name' => "John Vlissides"],
+        ]);
+    });
+    
+    $fixtures->table('books', function ($td) {
+        $td->generator('DesignPattern-N')->define(function($i) {
+            return [
+                'title' => 'Design Pattern ' . ($i + 1),
+                'code' => sprintf('000-000-%03d', $i),
+                'author_id' => 1,
+            ];
+        });
+    });
+    
+    return $fixtures->createSessionManager($container->get('dbal.connection'));
+    // or return $fixtures->createSessionManager([/*DBAL connection parameters*/]);
+});
 ```
 
-Attributes are overridden by right one over left one. Overridden function are not evaluated, so unnecessary slow calculations are not called.
+You can use named fixtures and generators in your test:
 
 ```php
+    public function testFindBook()
+    {
+        // Loads 4 gangs.
+        $this->session->into('authors')->load('GoF');
+
+        // Bind 8 books to 4 gangs as authors.
         $this->session->into('books')->with('DesignPattern-N')->with([
-            'title' => function($i) {
-                return 'Design Pattern -2nd Edition- ' . ($i + 1);
-            },
-        ])->generate(10);
+            'author_id' => function($i) { return $i % 4 + 1; },
+        ])->generate(8);
+        
+        $books = (new BookRepository($this->connection))->findAll();
+        $this->assertEquals("Design Pattern 1", $book[0]->getTitle());
+        $this->assertEquals("Erich Gamma", $book[0]->getAuthor()->getName());
+
+        $this->assertEquals("Design Pattern 8", $book[7]->getTitle());
+        $this->assertEquals("John Vlissides", $book[7]->getAuthor()->getName());
+    }
 ```
 
-If you don't care each attributes, you can do simply:
+- `load` method can load predefined fixture by name.
+- `with` method can set predefined generator by name.
 
-```php
-        $this->session->into('books')->generate(100);
-```
+It's useful when you have some common data structure in your application.
 
-But when there might be some property constraint, you can define table level generator rule:
+You can use `with` method multiple times. They are merged.
+
+### Default Values
+
+FixtureManager provides `defaults` method to customize random value generation.
+It's useful when table has some semantic constraints as its schema definition.
 
 ```php
     $fixtures->table('books', function ($td) {
@@ -151,3 +203,5 @@ But when there might be some property constraint, you can define table level gen
         ]);
     });
 ```
+
+In adobe example, `type` column is filled with random value between 1 and 3 even if not specified by `with`.
