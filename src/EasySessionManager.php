@@ -3,10 +3,13 @@
 namespace Lapaz\QuickBrownFox;
 
 use Doctrine\DBAL\Connection;
+use Doctrine\DBAL\DriverManager;
+use Doctrine\DBAL\Exception as DBALException;
 use Lapaz\QuickBrownFox\Database\FixtureSetupSession;
 use Lapaz\QuickBrownFox\Database\Loader;
 use Lapaz\QuickBrownFox\Database\NullRepositoryAggregate;
 use Lapaz\QuickBrownFox\Database\TablePrototypeGeneratorBuilder;
+use Lapaz\QuickBrownFox\Exception\DatabaseException;
 
 /**
  * Simple implementation of SessionManagerInterface.
@@ -23,6 +26,11 @@ class EasySessionManager implements SessionManagerInterface
      */
     protected ?FixtureSetupSession $currentSession;
 
+    /**
+     * @var Connection
+     */
+    protected Connection $connection;
+
     private Loader $loader;
 
     private NullRepositoryAggregate $repositoryAggregate;
@@ -33,8 +41,18 @@ class EasySessionManager implements SessionManagerInterface
      * @param Connection $connection
      */
     public function __construct(
-        protected Connection $connection,
+        Connection|array $connection,
     ) {
+        // PDO connection is no longer supported.
+        // https://github.com/doctrine/dbal/blob/3.0.0/UPGRADE.md#bc-break-user-provided-pdo-instance-is-no-longer-supported
+        if (is_array($connection)) {
+            try {
+                $connection = DriverManager::getConnection($connection);
+            } catch (DBALException $e) {
+                throw DatabaseException::fromDBALException($e);
+            }
+        }
+        $this->connection = $connection;
         $this->currentSession = null;
         $this->loader = new Loader($this->connection);
         $this->repositoryAggregate = new NullRepositoryAggregate();
