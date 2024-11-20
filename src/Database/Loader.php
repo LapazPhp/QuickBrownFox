@@ -4,6 +4,9 @@ namespace Lapaz\QuickBrownFox\Database;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Driver\PDO\MySQL\Driver as PDOMySQLDriver;
 use Doctrine\DBAL\Exception as DBALException;
+use Doctrine\DBAL\ParameterType;
+use Doctrine\DBAL\Types\BooleanType;
+use Doctrine\DBAL\Types\Type;
 use Doctrine\DBAL\Types\Types;
 use Lapaz\QuickBrownFox\Exception\DatabaseException;
 
@@ -49,8 +52,7 @@ class Loader
                     $types[$column] = $columnTypes[$column];
                 }
 
-                // Avoid PDO MySQL bug
-                list($record, $types) = $this->phpBug38546RemapBooleanToIntForPDOMySQL($record, $types);
+                list($record, $types) = $this->remapBooleanToInt($record, $types);
 
                 $affectedRows = $this->connection->insert($table, $record, $types);
                 if ($affectedRows < 1) {
@@ -67,30 +69,28 @@ class Loader
         }
     }
 
-    /**
-     * Workaround: This method replaces BOOL to INT for MySQL prepared statement.
-     * PDO's type system has a bug around boolean when MySQL ATTR_EMULATE_PREPARES off.
-     * If \PDO::PARAM_BOOL specified for INSERT or UPDATE, the SQL would be ignored.
-     *
-     * https://bugs.php.net/bug.php?id=38546
-     *
-     * @param array $record
-     * @param array $types
-     * @return array
-     */
-    private function phpBug38546RemapBooleanToIntForPDOMySQL(array $record, array $types): array
+    private function remapBooleanToInt(array $record, array $types): array
     {
-        if ($this->connection->getDriver() instanceof PDOMySQLDriver) {
-            return [$record, $types];
-        }
-
         foreach (array_keys($types) as $column) {
             if ($types[$column] === Types::BOOLEAN) {
+                $toBeConverted = true;
                 $types[$column] = Types::INTEGER;
-                if (isset($record[$column])) {
-                    // Ensure integer value if the field is not NULL.
-                    $record[$column] = intval($record[$column]);
+            } elseif ($types[$column] === ParameterType::BOOLEAN) {
+                $toBeConverted = true;
+                $types[$column] = ParameterType::INTEGER;
+            } elseif ($types[$column] instanceof BooleanType) {
+                $toBeConverted = true;
+                try {
+                    $types[$column] = Type::getTypeRegistry()->get(Types::INTEGER);
+                } catch (DBALException $e) {
+                    throw DatabaseException::fromDBALException($e);
                 }
+            } else {
+                $toBeConverted = false;
+            }
+            if ($toBeConverted && isset($record[$column])) {
+                // Ensure integer value if the field is not NULL.
+                $record[$column] = intval($record[$column]);
             }
         }
 
