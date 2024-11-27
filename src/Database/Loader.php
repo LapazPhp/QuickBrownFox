@@ -2,7 +2,6 @@
 namespace Lapaz\QuickBrownFox\Database;
 
 use Doctrine\DBAL\Connection;
-use Doctrine\DBAL\Driver\PDO\MySQL\Driver as PDOMySQLDriver;
 use Doctrine\DBAL\Exception as DBALException;
 use Doctrine\DBAL\ParameterType;
 use Doctrine\DBAL\Types\BooleanType;
@@ -60,8 +59,12 @@ class Loader
                 }
                 // More than 2 rows may be affected successfully by DB trigger.
 
-                $primaryKeys[] = $this->connection->lastInsertId();
-                // FIXME Check when single ID not presented (UUID, complex pk or such as)
+                try {
+                    $primaryKeys[] = $this->connection->lastInsertId();
+                    // FIXME Check when single ID not presented (UUID, complex pk or such as)
+                } catch (DBALException) {
+                    $primaryKeys[] = false;
+                }
             }
             return $primaryKeys;
         } catch (DBALException $e) {
